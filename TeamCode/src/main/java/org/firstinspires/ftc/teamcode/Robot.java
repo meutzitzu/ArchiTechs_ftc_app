@@ -14,8 +14,7 @@ import static java.lang.Math.abs;
 public class Robot {
 
     /**Declare hardware variables */
-
-        public ElapsedTime runtime = new ElapsedTime();
+    
         public DcMotor driveFrontLeft = null;
         public DcMotor driveFrontRight = null;
         public DcMotor driveRearLeft = null;
@@ -31,6 +30,7 @@ public class Robot {
         public final double ROTATION_SPEED = 0.3;
         public final double MAX_ROTATION = 2000;
         public final double MIN_ROTATION = 0;
+        public final double ROTATION_LENGTH = MAX_ROTATION - MIN_ROTATION;
 
         //constantele mele pentru profile motioning
         public final int A = 554;
@@ -181,11 +181,18 @@ public class Robot {
 
         public void rotationMovement(boolean goingUp){
 
+            double rotationSpeed = ROTATION_SPEED;
+            double theta = mechRotation.getCurrentPosition();
+            double error = 0;
 
-            if(goingUp){
-                double theta = mechRotation.getCurrentPosition();
-                double error = MAX_ROTATION - theta;
-                double rotationSpeed = 0;
+            if(goingUp) {
+                error = MAX_ROTATION - theta;
+            }
+            else{
+                error = theta - MIN_ROTATION;
+                rotationSpeed = -rotationSpeed;
+            }
+
                 /* still testing
                     if(theta < A){
                         rotationSpeed = alpha_one*theta + 0.1;
@@ -203,23 +210,23 @@ public class Robot {
                 {
                     rotationSpeed = 0;
                 } */
+                // THIS WORKS WELL ENOUGH
+            if(error > ROTATION_LENGTH*(5/6)){
+                rotationSpeed = rotationSpeed * (1 / error) * ((ROTATION_LENGTH / 6)) ;
+            }
+            else if(error > ROTATION_LENGTH/3){
 
-                /* THIS WORKS WELL ENOUGH
-                    if(error > MAX_ROTATION/2){
-                        rotationSpeed = MAX_ROTATION
-                    }
-                    else if(error <= MAX_ROTATION/2 && error > 10){
-                        rotationSpeed = MAX_ROTATION * error * (1/(MAX_ROTATION / 2));
-                    }
-                    else {
-                        rotationSpeed = 0;
-                    }
-                 */
+            }
+            else if(error <= ROTATION_LENGTH/3 && error > 10){
+                rotationSpeed = rotationSpeed * error * (1/(ROTATION_LENGTH / 3));
+            }
+            else {
+                rotationSpeed = 0;
+            }
+
 
 
                 mechRotation.setPower(rotationSpeed);
-
-            }
 
         }
 }
