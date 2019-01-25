@@ -14,7 +14,7 @@ import static java.lang.Math.abs;
 public class Robot {
 
     /**Declare hardware variables */
-    
+
         public DcMotor driveFrontLeft = null;
         public DcMotor driveFrontRight = null;
         public DcMotor driveRearLeft = null;
@@ -23,14 +23,16 @@ public class Robot {
         public DcMotor mechLiftLeft = null;
         public DcMotor mechLiftRight = null;
         public CRServo mechExt = null;
+        public Telemetry telemetry;
 
     /** Global constants */
         public final double MAX_CRSERVO_INPUT = 0.82;
         public final double LIFT_SPEED = 0.5;
-        public final double ROTATION_SPEED = 0.3;
-        public final double MAX_ROTATION = 2000;
-        public final double MIN_ROTATION = 0;
-        public final double ROTATION_LENGTH = MAX_ROTATION - MIN_ROTATION;
+        public final double ROTATION_SPEED = 0.2;
+        public final int MAX_ROTATION = 1900;
+        public final int MIN_ROTATION = 0;
+        public final int ROTATION_LENGTH = MAX_ROTATION - MIN_ROTATION;
+        public double PI = 3.14159;
 
         //constantele mele pentru profile motioning
         public final int A = 554;
@@ -56,6 +58,7 @@ public class Robot {
         mechLiftLeft = hashMap.get(DcMotor.class, "mechLiftLeft");
         mechLiftRight = hashMap.get(DcMotor.class, "mechLiftRight");
         mechExt = hashMap.get(CRServo.class, "mechExt");
+        telemetry = tele;
 
         /** Reseting motors' encoders + setting mode of operation
          *  --TeleOp
@@ -179,19 +182,29 @@ public class Robot {
 
     //"PID" for motor used for arm rotation
 
-        public void rotationMovement(boolean goingUp){
+        public void rotationMovement(boolean goingUp, double brakeFactor){
 
             double rotationSpeed = ROTATION_SPEED;
-            double theta = mechRotation.getCurrentPosition();
-            double error = 0;
+            int theta = mechRotation.getCurrentPosition();
+            int error;
+            boolean stop = false;
+            boolean up = true;
+
+            if(mechRotation.getMode() == DcMotor.RunMode.RUN_TO_POSITION){
+                mechRotation.setPower(0);
+                mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
 
             if(goingUp) {
-                error = MAX_ROTATION - theta;
+                error = theta;
             }
             else{
-                error = theta - MIN_ROTATION;
+                error = MAX_ROTATION - theta;
                 rotationSpeed = -rotationSpeed;
+                up = false;
             }
+
+            rotationSpeed = this.useBrake(rotationSpeed, brakeFactor, false);
 
                 /* still testing
                     if(theta < A){
@@ -211,22 +224,53 @@ public class Robot {
                     rotationSpeed = 0;
                 } */
                 // THIS WORKS WELL ENOUGH
-            if(error > ROTATION_LENGTH*(5/6)){
-                rotationSpeed = rotationSpeed * (1 / error) * ((ROTATION_LENGTH / 6)) ;
+            /*
+            if(error > (ROTATION_LENGTH * ((double)5/6))){
+                rotationSpeed = rotationSpeed * (1 / error) * (((ROTATION_LENGTH) / 6)) ;
+                telemetry.addData("Phase", "I");
             }
-            else if(error > ROTATION_LENGTH/3){
-
+            else if(error <= (ROTATION_LENGTH*(5.0/6)) && error > (ROTATION_LENGTH / (1.0/3))){
+                telemetry.addData("Phase", "II");
             }
-            else if(error <= ROTATION_LENGTH/3 && error > 10){
-                rotationSpeed = rotationSpeed * error * (1/(ROTATION_LENGTH / 3));
+            else if(error <= (ROTATION_LENGTH / (1.0/3)) && error > 10){
+                rotationSpeed = rotationSpeed * error * (1/(ROTATION_LENGTH / (2.0/3)));
+                telemetry.addData("Phase", "III");
             }
             else {
+                rotationSpeed = 0;
+                stop = true;
+                telemetry.addData("Phase", "IV");
+            } */
+
+            rotationSpeed = rotationSpeed * Math.sin(0.23*(tickToRad(error)) + 0.3);
+
+            if(abs(rotationSpeed) < 0.05 && stop == false){
+                    //rotationSpeed =  (rotationSpeed / abs(rotationSpeed))*0.05;
+                }
+            /*
+            if(mechRotation.getZeroPowerBehavior() == DcMotor.ZeroPowerBehavior.FLOAT){
+                mechRotation.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            }
+            else if(!up && (this.tickToRad(theta) < 1.6 && this.tickToRad(theta) > 0.52)){
+                mechRotation.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                rotationSpeed = 0;
+            } */
+
+            if(!up && (this.tickToRad(theta) < 5.26 && this.tickToRad(theta) > 2.32)){
+                mechRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            }
+
+            if(error > MAX_ROTATION - 10){
                 rotationSpeed = 0;
             }
 
 
-
                 mechRotation.setPower(rotationSpeed);
+                telemetry.addData("Error", error);
 
+        }
+
+        public double tickToRad(int ticks){
+            return (ticks*2*PI)/1120;
         }
 }

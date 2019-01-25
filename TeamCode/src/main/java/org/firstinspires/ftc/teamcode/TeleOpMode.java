@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name="OpMode", group="Linear OpMode")
@@ -17,6 +18,8 @@ public class TeleOpMode extends LinearOpMode {
     double mecanumX, mecanumY;
     double turn;
     double mechExtSpeed = 0;
+    int armPosition = 0;
+    ElapsedTime rotatingPause = new ElapsedTime();
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -59,13 +62,26 @@ public class TeleOpMode extends LinearOpMode {
             }
 
 
+            telemetry.addData("rotating arm pos", robot.driveRearLeft.getCurrentPosition());
+            telemetry.addData("rotating arm speed", robot.driveRearLeft.getPower());
+
             //Rotation of the main arm
-            if(gamepad1.dpad_up)
-                robot.rotationMovement(true);
-            else if(gamepad1.dpad_down){
-                robot.rotationMovement(false);
+            if (gamepad1.dpad_up) {
+                robot.rotationMovement(true, brakeFactor);
+            } else if (gamepad1.dpad_down) {
+                robot.rotationMovement(false, brakeFactor);
             } else {
-                robot.mechRotation.setPower(0);
+                if(robot.mechRotation.getCurrentPosition() <= robot.MIN_ROTATION + 10){
+                    if(robot.mechRotation.getMode() == DcMotor.RunMode.RUN_USING_ENCODER) {
+                        armPosition = robot.mechRotation.getCurrentPosition();
+                        robot.mechRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        robot.mechRotation.setTargetPosition(armPosition);
+                        robot.mechRotation.setPower(1);
+                    }
+                }
+                else {
+                    robot.mechRotation.setPower(0);
+                }
             }
 
 
@@ -73,9 +89,7 @@ public class TeleOpMode extends LinearOpMode {
             //Mecanum driving
             robot.mecanumMovement(robot.useBrake(mecanumX, brakeFactor, false), robot.useBrake(mecanumY, brakeFactor, false), robot.useBrake(turn, brakeFactor, false));
 
-            telemetry.addData("Elapsed time", runtime.seconds());
-            telemetry.addData("rotating arm pos", robot.mechRotation.getCurrentPosition());
-            telemetry.addData("rotating arm speed", robot.mechRotation.getPower());
+            telemetry.addData("Angle", robot.tickToRad(robot.mechRotation.getCurrentPosition()));
             telemetry.update();
         }
     }
