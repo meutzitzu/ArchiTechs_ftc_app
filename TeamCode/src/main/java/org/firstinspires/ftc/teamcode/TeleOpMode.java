@@ -19,7 +19,6 @@ public class TeleOpMode extends LinearOpMode {
     double turn;
     double mechExtSpeed = 0;
     int armPosition = 0;
-    ElapsedTime rotatingPause = new ElapsedTime();
 
     @Override
     public void runOpMode() throws InterruptedException {

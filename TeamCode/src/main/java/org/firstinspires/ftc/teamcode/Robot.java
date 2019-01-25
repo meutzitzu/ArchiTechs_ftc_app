@@ -28,9 +28,9 @@ public class Robot {
     /** Global constants */
         public final double MAX_CRSERVO_INPUT = 0.82;
         public final double LIFT_SPEED = 0.5;
-        public final double ROTATION_SPEED = 0.2;
-        public final int MAX_ROTATION = 1900;
-        public final int MIN_ROTATION = 0;
+        public final double ROTATION_SPEED = 0.3;
+        public final int MAX_ROTATION = 0;
+        public final int MIN_ROTATION = -1900;
         public final int ROTATION_LENGTH = MAX_ROTATION - MIN_ROTATION;
         public double PI = 3.14159;
 
@@ -177,7 +177,7 @@ public class Robot {
             liftPower = Range.clip(liftPower, -1, 1) ;
 
             mechLiftLeft.setPower(liftPower);
-            mechLiftRight.setPower(-liftPower);
+            mechLiftRight.setPower(liftPower);
         }
 
     //"PID" for motor used for arm rotation
@@ -196,7 +196,7 @@ public class Robot {
             }
 
             if(goingUp) {
-                error = MAX_ROTATION - theta;
+                error = theta - MIN_ROTATION;
                 if(mechRotation.getMode() != DcMotor.RunMode.RUN_USING_ENCODER){
                     mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 }
@@ -207,7 +207,6 @@ public class Robot {
                 up = false;
             }
 
-            rotationSpeed = this.useBrake(rotationSpeed, brakeFactor, false);
 
 
             /*
@@ -236,8 +235,9 @@ public class Robot {
             */
 
             if(up) {
-                rotationSpeed = rotationSpeed * Math.sin(0.23 * (tickToRad(MAX_ROTATION - error)) + 0.3);
-                if(error < 10){
+
+                rotationSpeed = (rotationSpeed) * Math.sin(0.23 * (tickToRad(error)) + 0.3);
+                if(MAX_ROTATION - theta < 10){
                     rotationSpeed = 0;
                 }
             }
@@ -258,17 +258,7 @@ public class Robot {
             }
 
 
-            if(abs(rotationSpeed) < 0.05 && stop == false){
-                    //rotationSpeed =  (rotationSpeed / abs(rotationSpeed))*0.05;
-                }
-
-            /*
-            if(!up && (this.tickToRad(theta) < 5.26 && this.tickToRad(theta) > 2.32)){
-                mechRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                rotationSpeed = 0.1;
-            }
-            */
-
+            rotationSpeed = this.useBrake(rotationSpeed, brakeFactor, false);
 
 
 
