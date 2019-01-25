@@ -29,10 +29,12 @@ public class Robot {
         public final double MAX_CRSERVO_INPUT = 0.82;
         public final double LIFT_SPEED = 1;
         public final double ROTATION_SPEED = 0.4;
+        public final int MAX_LIFT_POSITION = 32800;
         public final int MAX_ROTATION = 0;
         public final int MIN_ROTATION = -1900;
         public final int ROTATION_LENGTH = MAX_ROTATION - MIN_ROTATION;
         public double PI = 3.14159;
+
 
         //constantele mele pentru profile motioning
         public final int A = 554;
@@ -257,4 +259,33 @@ public class Robot {
         public double tickToRad(int ticks){
             return (ticks*2*PI)/1120;
         }
+
+        public void setDrivetrainMode(DcMotor.RunMode runMode){
+
+            driveFrontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            driveFrontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            driveRearLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            driveRearRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            driveFrontLeft.setMode(runMode);
+            driveFrontRight.setMode(runMode);
+            driveRearLeft.setMode(runMode);
+            driveRearRight.setMode(runMode);
+        }
+
+        public void setDrivetrainPosition(int ticks){
+
+            driveFrontLeft.setTargetPosition(-ticks);
+            driveFrontRight.setTargetPosition(ticks);
+            driveRearLeft.setTargetPosition(-ticks);
+            driveRearRight.setTargetPosition(ticks);
+
+            driveFrontLeft.setPower(0.3);
+            driveFrontRight.setPower(0.3);
+            driveRearLeft.setPower(0.3);
+            driveRearRight.setPower(0.3);
+
+
+        }
+
 }
