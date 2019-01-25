@@ -19,6 +19,7 @@ public class TeleOpMode extends LinearOpMode {
     double turn;
     double mechExtSpeed = 0;
     int armPosition = 0;
+    int grabDirection = 1;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -81,6 +82,24 @@ public class TeleOpMode extends LinearOpMode {
                 else {
                     robot.mechRotation.setPower(0);
                 }
+            }
+
+
+            //Grabber servo
+            if (gamepad1.right_trigger != 0){
+                if(gamepad1.right_bumper){
+                    grabDirection = -1;
+                }
+                else {
+                    grabDirection = 1;
+                }
+
+                robot.mechGrab.setPower(grabDirection * robot.MAX_CRSERVO_INPUT);
+
+            }
+            else {
+                robot.mechGrab.setPower(0);
+                grabDirection = 1;
             }
 
 
