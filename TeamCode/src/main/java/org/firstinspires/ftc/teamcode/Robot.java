@@ -27,8 +27,8 @@ public class Robot {
 
     /** Global constants */
         public final double MAX_CRSERVO_INPUT = 0.82;
-        public final double LIFT_SPEED = 0.5;
-        public final double ROTATION_SPEED = 0.3;
+        public final double LIFT_SPEED = 1;
+        public final double ROTATION_SPEED = 0.4;
         public final int MAX_ROTATION = 0;
         public final int MIN_ROTATION = -1900;
         public final int ROTATION_LENGTH = MAX_ROTATION - MIN_ROTATION;
@@ -237,7 +237,11 @@ public class Robot {
             if(up) {
 
                 rotationSpeed = (rotationSpeed) * Math.sin(0.23 * (tickToRad(error)) + 0.3);
-                if(MAX_ROTATION - theta < 10){
+
+                if(error > 1400 && error < ROTATION_LENGTH - 10){
+                    rotationSpeed = this.useBrake(rotationSpeed, 0.8, false);
+                }
+                if(ROTATION_LENGTH - theta < 10){
                     rotationSpeed = 0;
                 }
             }
