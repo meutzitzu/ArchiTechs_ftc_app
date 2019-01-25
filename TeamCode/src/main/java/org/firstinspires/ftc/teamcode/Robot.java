@@ -209,37 +209,13 @@ public class Robot {
 
 
 
-            /*
-            if(error > (ROTATION_LENGTH * ((double)5/6)) && up){
-                rotationSpeed = rotationSpeed * (1 / error) * (((ROTATION_LENGTH) / 6)) ;
-                telemetry.addData("Phase", "I");
-            }
-            else if(error > (ROTATION_LENGTH *((double)2/3)) && !up){
-                rotationSpeed = rotationSpeed * (1/error) * ((ROTATION_LENGTH *((double)1/2) ));
-            }
-            else if(error <= (ROTATION_LENGTH*(5.0/6)) && error > (ROTATION_LENGTH / (1.0/3)) && up){
-                telemetry.addData("Phase", "II up");
-            }
-            else if(error <= (ROTATION_LENGTH *((double)2/3)) && error > 10 && !up){
-                rotationSpeed = rotationSpeed * error * ((ROTATION_LENGTH));
-            }
-            else if(error <= (ROTATION_LENGTH / (1.0/3)) && error > 10 && up){
-                rotationSpeed = rotationSpeed * error * (1/(ROTATION_LENGTH / (2.0/3)));
-                telemetry.addData("Phase", "III");
-            }
-            else {
-                rotationSpeed = 0;
-                stop = true;
-                telemetry.addData("Phase", "IV");
-            }
-            */
 
             if(up) {
 
                 rotationSpeed = (rotationSpeed) * Math.sin(0.23 * (tickToRad(error)) + 0.3);
 
                 if(error > 1400 && error < ROTATION_LENGTH - 10){
-                    rotationSpeed = this.useBrake(rotationSpeed, 0.8, false);
+                    rotationSpeed = this.useBrake(rotationSpeed, 0.2, false);
                 }
                 if(ROTATION_LENGTH - theta < 10){
                     rotationSpeed = 0;
@@ -252,9 +228,15 @@ public class Robot {
                     }
                     rotationSpeed = rotationSpeed * ((double)1/error) * ((ROTATION_LENGTH * ((double)1/2)));
                 }
-                else if(error <= (ROTATION_LENGTH *((double)2/3)) && error > 10){
+                else if(error <= (ROTATION_LENGTH *((double)2/3)) && error > 140){
                     mechRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     rotationSpeed = -0.1;
+                }
+                else if(error < 140 && error > 10){
+                    if(mechRotation.getMode() != DcMotor.RunMode.RUN_USING_ENCODER){
+                        mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    }
+                    rotationSpeed = (-0.1) * (error) * ((double)1/140);
                 }
                 else {
                     rotationSpeed = 0;
