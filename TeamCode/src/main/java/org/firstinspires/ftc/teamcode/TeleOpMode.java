@@ -72,7 +72,7 @@ public class TeleOpMode extends LinearOpMode {
                 robot.rotationMovement(false, brakeFactor);
             } else {
                 if(robot.mechRotation.getCurrentPosition() <= robot.MIN_ROTATION + 10){
-                    if(robot.mechRotation.getMode() == DcMotor.RunMode.RUN_USING_ENCODER) {
+                    if(robot.mechRotation.getMode() != DcMotor.RunMode.RUN_TO_POSITION) {
                         armPosition = robot.mechRotation.getCurrentPosition();
                         robot.mechRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         robot.mechRotation.setTargetPosition(armPosition);
