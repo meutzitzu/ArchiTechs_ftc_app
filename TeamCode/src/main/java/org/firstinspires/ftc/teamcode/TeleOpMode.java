@@ -89,6 +89,7 @@ public class TeleOpMode extends LinearOpMode {
             //Mecanum driving
             robot.mecanumMovement(robot.useBrake(mecanumX, brakeFactor, false), robot.useBrake(mecanumY, brakeFactor, false), robot.useBrake(turn, brakeFactor, false));
 
+            telemetry.addData("Lift position", robot.mechLiftLeft.getCurrentPosition());
             telemetry.addData("Angle", robot.tickToRad(robot.mechRotation.getCurrentPosition()));
             telemetry.update();
         }
