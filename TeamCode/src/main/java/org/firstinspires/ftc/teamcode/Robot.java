@@ -230,8 +230,16 @@ public class Robot {
                     rotationSpeed = rotationSpeed * ((double)1/error) * ((ROTATION_LENGTH * ((double)1/2)));
                 }
                 else if(error <= (ROTATION_LENGTH *((double)2/3)) && error > 10){
-                   // mechRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    rotationSpeed = -0.1;
+
+                    /** Daca vreti sa coboare bratul cu encoder, comentati linia chiar de sus
+                     *      cu encoder - coboara mai controlat, dar sacadat
+                     *      fara encoder - nu sacadeaza, dar poate se izbeste
+                     *
+                     *      Va puteti juca si cu puterea de aici un pic -> aia cu rotationSpeed = -0.05
+                     *
+                     * */
+                    mechRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    rotationSpeed = -0.05;
                 }
                 else {
                     rotationSpeed = 0;
