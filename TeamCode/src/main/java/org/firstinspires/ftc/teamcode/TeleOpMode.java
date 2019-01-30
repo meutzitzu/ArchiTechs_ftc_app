@@ -14,7 +14,7 @@ public class TeleOpMode extends LinearOpMode {
     Robot robot = new Robot();
 
     //all the strange local variables such as brakeFactor
-    double brakeFactor = 1;
+    double brakeFactor = 1, brakeFactor_2 = 1;
     double mecanumX, mecanumY;
     double turn;
     double mechExtSpeed = 0;
@@ -31,11 +31,12 @@ public class TeleOpMode extends LinearOpMode {
         while(opModeIsActive()){
 
             //Assigning values to variables dependant on the controller
-            mecanumX = -gamepad1.left_stick_x;
-            mecanumY = gamepad1.left_stick_y;
+            mecanumX = -gamepad1.left_stick_x * robot.DRIVING_COEF;
+            mecanumY = gamepad1.left_stick_y * robot. DRIVING_COEF;
             turn = gamepad1.right_stick_x;
 
             brakeFactor = 1 - gamepad1.left_trigger;
+            brakeFactor_2 = 1 - gamepad2.left_trigger;
 
 
 
@@ -57,7 +58,7 @@ public class TeleOpMode extends LinearOpMode {
             else if(gamepad1.a){
                 robot.liftMovement(robot.useBrake(-robot.LIFT_SPEED, brakeFactor, false));
             }
-            else if(!gamepad1.b && !gamepad1.a){
+            else if(!gamepad2.dpad_up && !gamepad2.dpad_down){
                 robot.liftMovement(0);
             }
 
@@ -107,7 +108,8 @@ public class TeleOpMode extends LinearOpMode {
             //Mecanum driving
             robot.mecanumMovement(robot.useBrake(mecanumX, brakeFactor, false), robot.useBrake(mecanumY, brakeFactor, false), robot.useBrake(turn, brakeFactor, false));
 
-            telemetry.addData("Lift position", robot.mechLiftLeft.getCurrentPosition());
+            telemetry.addData("Lift position", robot.mechRotation.getCurrentPosition());
+            telemetry.addData("FR", robot.driveFrontRight.getCurrentPosition());
             telemetry.addData("Angle", robot.tickToRad(robot.mechRotation.getCurrentPosition()));
             telemetry.update();
         }

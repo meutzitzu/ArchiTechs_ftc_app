@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -30,11 +31,12 @@ public class Robot {
         public final double MAX_CRSERVO_INPUT = 0.82;
         public final double LIFT_SPEED = 1;
         public final double ROTATION_SPEED = 0.4;
-        public final int MAX_LIFT_POSITION = 32800;
+        public final int MAX_LIFT_POSITION = 25000;
         public final int MAX_ROTATION = 0;
-        public final int MIN_ROTATION = -1900;
+        public final int MIN_ROTATION = -1800;
         public final int ROTATION_LENGTH = MAX_ROTATION - MIN_ROTATION;
         public double PI = 3.14159;
+        public final double DRIVING_COEF = 0.6;
 
 
         //constantele mele pentru profile motioning
@@ -92,9 +94,15 @@ public class Robot {
         mechLiftRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         mechLiftRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if(!teleOp) {
+            mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            mechRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        }
+        else{
+            mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
         mechRotation.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
 
 
         /** Setting direction of hardware components
@@ -216,9 +224,14 @@ public class Robot {
 
             if(up) {
 
-                rotationSpeed = (rotationSpeed) * Math.sin(0.23 * (tickToRad(error)) + 0.3);
+                if(error >= 0) {
+                    rotationSpeed = (rotationSpeed) * Math.sin(0.23 * (tickToRad(error)) + 0.3);
+                }
+                else{
+                    rotationSpeed = 0.3;
+                }
 
-                if(ROTATION_LENGTH - theta < 10){
+                if(ROTATION_LENGTH - error < 10){
                     rotationSpeed = 0;
                 }
             }
@@ -242,7 +255,7 @@ public class Robot {
                     rotationSpeed = -0.05;
                 }
                 else {
-                    rotationSpeed = 0;
+                    rotationSpeed = -0.05;
                 }
             }
 
