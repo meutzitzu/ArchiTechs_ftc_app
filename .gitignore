@@ -4,6 +4,8 @@
 
 # Java class files
 *.class
+TeamCode/src/main/java/org/firstinspires/ftc/teamcode/MotorPID.java
+
 
 # generated files
 bin/

@@ -20,6 +20,7 @@ public class TeleOpMode extends LinearOpMode {
     double mechExtSpeed = 0;
     int armPosition = 0;
     int grabDirection = 1;
+    int extensionGrabber = 0; // 1 -> extending, 0 -> idle, -1 -> retracting
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -30,22 +31,32 @@ public class TeleOpMode extends LinearOpMode {
 
         while(opModeIsActive()){
 
-            //Assigning values to variables dependant on the controller
+
+
+            /**Controller 1 input -> to be driving controller*/
             mecanumX = -gamepad1.left_stick_x * robot.DRIVING_COEF;
             mecanumY = gamepad1.left_stick_y * robot. DRIVING_COEF;
             turn = gamepad1.right_stick_x;
 
             brakeFactor = 1 - gamepad1.left_trigger;
+
+            if(!gamepad1.dpad_left && !gamepad1.dpad_right)
+                extensionGrabber = 0;
+            else if(gamepad1.dpad_left)
+                extensionGrabber = 1;
+            else if(gamepad1.dpad_right)
+                extensionGrabber = -1;
+
+            /**Controller 2 input -> to be mineral collection controller*/
             brakeFactor_2 = 1 - gamepad2.left_trigger;
 
 
-
             //mechExt Servo
-            if(!gamepad1.dpad_left && !gamepad1.dpad_right)
+            if(extensionGrabber == 0)
                 mechExtSpeed = 0;
-            else if(gamepad1.dpad_left)
+            else if(extensionGrabber == 1)
                 mechExtSpeed = 0.85;
-            else if(gamepad1.dpad_right)
+            else if(extensionGrabber == -1)
                 mechExtSpeed = -0.85;
 
 

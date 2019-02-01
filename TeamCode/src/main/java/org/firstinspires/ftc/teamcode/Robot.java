@@ -1,11 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -20,33 +17,25 @@ public class Robot {
         public DcMotor driveFrontRight = null;
         public DcMotor driveRearLeft = null;
         public DcMotor driveRearRight = null;
-        public DcMotor mechRotation = null;
+        public DcMotor mechRotation = null;  //arm movement
         public DcMotor mechLiftLeft = null;
         public DcMotor mechLiftRight = null;
-        public CRServo mechExt = null;
-        public CRServo mechGrab = null;
+        public CRServo mechExt = null;  //extension of arm
+        public CRServo mechGrab = null;  //servo used on the grabber
         public Telemetry telemetry;
 
     /** Global constants */
-        public final double MAX_CRSERVO_INPUT = 0.82;
+        public final double MAX_CRSERVO_INPUT = 0.82;  //max power that can be
         public final double LIFT_SPEED = 1;
-        public final double ROTATION_SPEED = 0.4;
+        public final double ROTATION_SPEED = 0.4;  //max angular velocity of the arm
+        public final double MIN_LIFT_POSITION = 0;
         public final int MAX_LIFT_POSITION = 25000;
-        public final int MAX_ROTATION = 0;
-        public final int MIN_ROTATION = -1800;
-        public final int ROTATION_LENGTH = MAX_ROTATION - MIN_ROTATION;
+        public final int MAX_ROTATION = 0;  //will probably be ignored; used only as reference for minimum position
+        public final int MIN_ROTATION = -1800;  //useful
+        public final int ROTATION_LENGTH = MAX_ROTATION - MIN_ROTATION; //
         public double PI = 3.14159;
-        public final double DRIVING_COEF = 0.6;
+        public final double DRIVING_COEF = 0.6; //max speed is a little to much for our competent drivers
 
-
-        //constantele mele pentru profile motioning
-        public final int A = 554;
-        public final int B = 738;
-        public final int C = 1390;
-        public final int D = 1600;
-        public final int E = 2000;
-        public final double alpha_one = (2*ROTATION_SPEED)/(A+B);
-        public final double alpha_two = (2*alpha_one)/(E-C);
 
     /** Auxiliary variables */
 
@@ -67,24 +56,19 @@ public class Robot {
         telemetry = tele;
 
         /** Reseting motors' encoders + setting mode of operation
-         *  --TeleOp
-         */
+         *  --TeleOp                                             */
 
         driveFrontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         driveFrontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        driveFrontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         driveFrontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         driveFrontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        driveFrontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         driveRearRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         driveRearRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        driveRearRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         driveRearLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         driveRearLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        driveRearLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         mechLiftLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         mechLiftLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -97,9 +81,12 @@ public class Robot {
         if(!teleOp) {
             mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             mechRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
         }
         else{
             mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            this.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
         mechRotation.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -110,10 +97,12 @@ public class Robot {
          *  --de retinut
          */
 
+        //setting all motors to take negative (<0) input to move forward
         driveFrontLeft.setDirection(DcMotor.Direction.REVERSE);
         driveFrontRight.setDirection(DcMotor.Direction.FORWARD);
         driveRearLeft.setDirection(DcMotor.Direction.REVERSE);
         driveRearRight.setDirection(DcMotor.Direction.FORWARD);
+
         mechRotation.setDirection(DcMotor.Direction.FORWARD);
         mechLiftLeft.setDirection(DcMotor.Direction.FORWARD);
         mechLiftRight.setDirection(DcMotor.Direction.FORWARD);
@@ -124,8 +113,9 @@ public class Robot {
 
     /** Global methods */
 
-    //Braking (using a trigger) as a rescale
-    //Almost all movement actions
+        /** Braking (using a trigger) as a rescale
+            Almost all movement actions
+         */
 
         public double useBrake(double initialSpeed, double brakeFactor, boolean isCRServo){
 
@@ -146,7 +136,7 @@ public class Robot {
                 }
             }
 
-            //Check that the brake factor is actually braking
+            /** Check that the brake factor is actually braking */
             if(brakeFactor <= 1 && brakeFactor >=0){
                 finalSpeed = initialSpeed*brakeFactor;
             }
@@ -160,8 +150,12 @@ public class Robot {
             return finalSpeed;
         }
 
-    //Mecanun Driving for TeleOp
-    //Can be used with robot.useBrake()
+        /** Mecanun Driving for TeleOp
+        *   Any kind of movement possible
+        *   --driveX & driveY ->translation (even diagonally)
+        *   --turn -> rotational
+        *   note: don't strafe for your own good
+        *   Can be used with robot.useBrake()                */
 
         public void mecanumMovement(double driveX, double driveY, double turn){
             double FrontLeftPower;
@@ -169,13 +163,13 @@ public class Robot {
             double RearLeftPower;
             double RearRightPower;
 
-            //Clip value between -1 & 1
+            /** Clip value between -1 & 1 */
             FrontLeftPower    = Range.clip(( driveX + driveY) - turn, -1.0, 1.0) ;
             FrontRightPower   = Range.clip((-driveX + driveY) + turn, -1.0, 1.0) ;
             RearLeftPower     = Range.clip((-driveX + driveY) - turn, -1.0, 1.0) ;
             RearRightPower    = Range.clip(( driveX + driveY) + turn, -1.0, 1.0) ;
 
-            //Set motor speed
+            /** Set motor speed */
             driveFrontLeft.setPower(FrontLeftPower);
             driveFrontRight.setPower(FrontRightPower);
             driveRearLeft.setPower(RearLeftPower);
@@ -183,23 +177,33 @@ public class Robot {
         }
 
 
-    //Motors used for lifting the robot
+        /** Motors used for lifting the robot */
 
         public void liftMovement(double liftPower){
             liftPower = Range.clip(liftPower, -1, 1) ;
+
+            //Lowering safety
+            if(mechLiftLeft.getCurrentPosition() > MAX_LIFT_POSITION && liftPower > 0){
+                liftPower = 0;
+            }
+
+            //Raising safety
+            if(mechLiftLeft.getCurrentPosition() < MIN_LIFT_POSITION  && liftPower < 0){
+                liftPower = 0;
+            }
 
             mechLiftLeft.setPower(liftPower);
             mechLiftRight.setPower(liftPower);
         }
 
-    //"PID" for motor used for arm rotation
+        /** "PID" for motor used for arm rotation
+        *   waiting a full restructure           */
 
         public void rotationMovement(boolean goingUp, double brakeFactor){
 
             double rotationSpeed = ROTATION_SPEED;
             int theta = mechRotation.getCurrentPosition();
             int error;
-            boolean stop = false;
             boolean up = true;
 
             if(mechRotation.getMode() == DcMotor.RunMode.RUN_TO_POSITION){
@@ -245,12 +249,11 @@ public class Robot {
                 else if(error <= (ROTATION_LENGTH *((double)2/3)) && error > 10){
 
                     /** Daca vreti sa coboare bratul cu encoder, comentati linia chiar de sus
-                     *      cu encoder - coboara mai controlat, dar sacadat
-                     *      fara encoder - nu sacadeaza, dar poate se izbeste
+                     *  cu encoder - coboara mai controlat, dar sacadat
+                     *  fara encoder - nu sacadeaza, dar poate se izbeste
                      *
-                     *      Va puteti juca si cu puterea de aici un pic -> aia cu rotationSpeed = -0.05
-                     *
-                     * */
+                     *  Va puteti juca si cu puterea de aici un pic -> aia cu rotationSpeed = -0.05 */
+
                     mechRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     rotationSpeed = -0.05;
                 }
@@ -270,6 +273,7 @@ public class Robot {
 
         }
 
+        //turns ticks into rads, almost
         public double tickToRad(int ticks){
             return (ticks*2*PI)/1120;
         }
@@ -287,17 +291,45 @@ public class Robot {
             driveRearRight.setMode(runMode);
         }
 
-        public void setDrivetrainPosition(int ticks){
 
-            driveFrontLeft.setTargetPosition(-ticks);
-            driveFrontRight.setTargetPosition(ticks);
-            driveRearLeft.setTargetPosition(-ticks);
-            driveRearRight.setTargetPosition(ticks);
+        //Autonom all-around method for movement of the robot
+        //     --movement type : "translation", "rotation", "strafing"
+        //          --"translation" : forward -> ticks > 0
+        //          --"rotation" : CCW
+        //          --"strafing" : right -> ticks > 0
+        public void setDrivetrainPosition(int ticks, String movementType, double maxSpeed){
 
-            driveFrontLeft.setPower(0.3);
-            driveFrontRight.setPower(0.3);
-            driveRearLeft.setPower(0.3);
-            driveRearRight.setPower(0.3);
+            this.setDrivetrainMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            this.setDrivetrainMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+            switch(movementType){
+                case "translation":
+                    driveFrontLeft.setTargetPosition(-ticks);
+                    driveFrontRight.setTargetPosition(-ticks);
+                    driveRearLeft.setTargetPosition(-ticks);
+                    driveRearRight.setTargetPosition(-ticks);
+                    break;
+                case "rotation":
+                    driveFrontLeft.setTargetPosition(ticks);
+                    driveFrontRight.setTargetPosition(-ticks);
+                    driveRearLeft.setTargetPosition(ticks);
+                    driveRearRight.setTargetPosition(-ticks);
+                    break;
+                case "strafing":
+                    driveFrontLeft.setTargetPosition(-ticks);
+                    driveFrontRight.setTargetPosition(ticks);
+                    driveRearLeft.setTargetPosition(ticks);
+                    driveRearRight.setTargetPosition(-ticks);
+                    break;
+
+            }
+
+
+            driveFrontLeft.setPower(maxSpeed);
+            driveFrontRight.setPower(maxSpeed);
+            driveRearLeft.setPower(maxSpeed);
+            driveRearRight.setPower(maxSpeed);
 
 
         }

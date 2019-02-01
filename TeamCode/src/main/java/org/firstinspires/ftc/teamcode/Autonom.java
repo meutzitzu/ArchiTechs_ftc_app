@@ -23,33 +23,35 @@ public class Autonom extends LinearOpMode {
 
         while(robot.mechLiftLeft.getCurrentPosition() < robot.MAX_LIFT_POSITION && !isStopRequested()){
             robot.liftMovement(robot.LIFT_SPEED);
+            telemetry.addData("Status:  ", "Detaching from lander I");
         }
 
         robot.liftMovement(0);
 
-        robot.setDrivetrainMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        robot.setDrivetrainPosition(600);
+        robot.setDrivetrainPosition(-600, "rotation", 0.3);
 
-        while(robot.driveRearLeft.isBusy()){
-
-//            if(robot.driveRearLeft.getCurrentPosition() < -200 && robot.mechLiftLeft.getCurrentPosition() > 0){
-//                robot.liftMovement((-robot.LIFT_SPEED));
-//            }
-        }
-
-        robot.driveFrontLeft.setTargetPosition(-1200);
-        robot.driveFrontRight.setTargetPosition(0);
-        robot.driveRearLeft.setTargetPosition(-1200);
-        robot.driveRearRight.setTargetPosition(0);
-
-        while(robot.driveFrontLeft.isBusy()){
-            telemetry.addData("Status", "Forward");
+        while(robot.driveRearLeft.isBusy()) {
+            telemetry.addData("Status:  ", "Detaching from lander II");
             telemetry.update();
         }
 
-//        while(robot.mechLiftLeft.getCurrentPosition() > 10)
-//            robot.liftMovement(-robot.LIFT_SPEED);
+        robot.setDrivetrainPosition(300,"translation", 0.3);
+
+
+        while(robot.driveFrontLeft.isBusy()){
+            telemetry.addData("Status:  ", "Detaching from lander III");
+            telemetry.update();
+        }
+
+
+        ///Here comes tensor flow stuff --- gyro would probably come in handy
+
+
+        ///Placing the team marker
+
+
+        ///Parking in the crater
 
 
     }
