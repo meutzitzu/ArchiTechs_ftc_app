@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
@@ -22,6 +23,7 @@ public class Robot {
         public DcMotor mechLiftRight = null;
         public CRServo mechExt = null;  //extension of arm
         public CRServo mechGrab = null;  //servo used on the grabber
+        public ColorSensor colorSensor = null;
         public Telemetry telemetry;
 
     /** Global constants */
@@ -53,6 +55,7 @@ public class Robot {
         mechLiftRight = hashMap.get(DcMotor.class, "mechLiftRight");
         mechExt = hashMap.get(CRServo.class, "mechExt");
         mechGrab = hashMap.get(CRServo.class, "mechGrab");
+        colorSensor = hashMap.get(ColorSensor.class, "colorSensor");
         telemetry = tele;
 
         /** Reseting motors' encoders + setting mode of operation
@@ -334,4 +337,7 @@ public class Robot {
 
         }
 
+    public String getColorSensorData() {
+        return "R: " + colorSensor.red() + ", G: " + colorSensor.green() + ", B: " + colorSensor.blue();
+    }
 }
