@@ -43,7 +43,7 @@ public class TensorFlowTeleOpTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        robot.init(hardwareMap, true, telemetry);
+        robot.init(hardwareMap, true, telemetry, this);
         initVuforia();
         if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
             initTfod();
@@ -143,7 +143,7 @@ public class TensorFlowTeleOpTest extends LinearOpMode {
             mechExtSpeed = -0.85;
 
 
-        robot.mechExt.setPower(robot.useBrake(mechExtSpeed, brakeFactor, true));
+        //robot.mechExt.setPower(robot.useBrake(mechExtSpeed, brakeFactor, true));
 
         //Lift motors
         if(gamepad1.b){
