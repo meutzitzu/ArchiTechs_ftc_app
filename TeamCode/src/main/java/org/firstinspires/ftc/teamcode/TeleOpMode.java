@@ -24,7 +24,7 @@ public class TeleOpMode extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        robot.init(hardwareMap, true, telemetry);
+        robot.init(hardwareMap, true, telemetry, this);
 
         waitForStart();
         runtime.reset();
@@ -60,7 +60,7 @@ public class TeleOpMode extends LinearOpMode {
                 mechExtSpeed = -0.85;
 
 
-            robot.mechExt.setPower(robot.useBrake(mechExtSpeed, brakeFactor, true));
+            //robot.mechExt.setPower(robot.useBrake(mechExtSpeed, brakeFactor, true));
 
             //Lift motors
             if(gamepad1.b){
@@ -69,9 +69,36 @@ public class TeleOpMode extends LinearOpMode {
             else if(gamepad1.a){
                 robot.liftMovement(robot.useBrake(-robot.LIFT_SPEED, brakeFactor, false));
             }
-            else if(!gamepad2.dpad_up && !gamepad2.dpad_down){
+            else if(!gamepad1.a && !gamepad1.b && !gamepad2.a && !gamepad2.b && !gamepad2.x && !gamepad2.y){
                 robot.liftMovement(0);
             }
+
+                //adjusting lift motors if needed -> 2nd controller
+
+            else if(gamepad2.b){
+                robot.mechLiftRight.setPower(1);
+            }
+            else if(gamepad2.a){
+                robot.mechLiftRight.setPower(-1);
+            }
+
+            else if(gamepad2.y){
+                robot.mechLiftLeft.setPower(1);
+            }
+            else if(gamepad2.x){
+                robot.mechLiftLeft.setPower(-1);
+            }
+
+
+            if(gamepad2.right_bumper){
+                robot.mechLiftRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                robot.mechLiftLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+                robot.mechLiftLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                robot.mechLiftRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
+
+
 
 
             telemetry.addData("rotating arm pos", robot.driveRearLeft.getCurrentPosition());
@@ -119,7 +146,8 @@ public class TeleOpMode extends LinearOpMode {
             //Mecanum driving
             robot.mecanumMovement(robot.useBrake(mecanumX, brakeFactor, false), robot.useBrake(mecanumY, brakeFactor, false), robot.useBrake(turn, brakeFactor, false));
 
-            telemetry.addData("Lift position", robot.mechRotation.getCurrentPosition());
+            telemetry.addData("Lift position left", robot.mechLiftLeft.getCurrentPosition());
+            telemetry.addData("Lift position right", robot.mechLiftRight.getCurrentPosition());
             telemetry.addData("FR", robot.driveFrontRight.getCurrentPosition());
             telemetry.addData("Angle", robot.tickToRad(robot.mechRotation.getCurrentPosition()));
             telemetry.update();

@@ -1,13 +1,19 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IntegratingGyroscope;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.sin;
+import static java.lang.Thread.sleep;
 
 public class Robot {
 
@@ -20,9 +26,12 @@ public class Robot {
         public DcMotor mechRotation = null;  //arm movement
         public DcMotor mechLiftLeft = null;
         public DcMotor mechLiftRight = null;
-        public CRServo mechExt = null;  //extension of arm
+        //public CRServo mechExt = null;  //extension of arm
         public CRServo mechGrab = null;  //servo used on the grabber
+        IntegratingGyroscope gyro;
+        ModernRoboticsI2cGyro modernRoboticsI2cGyro;
         public Telemetry telemetry;
+        public LinearOpMode opMode;
 
     /** Global constants */
         public final double MAX_CRSERVO_INPUT = 0.82;  //max power that can be
@@ -40,7 +49,7 @@ public class Robot {
     /** Auxiliary variables */
 
 
-    public void init(HardwareMap hashMap, boolean teleOp, Telemetry tele) throws InterruptedException {
+    public void init(HardwareMap hashMap, boolean teleOp, Telemetry tele, LinearOpMode mode) throws InterruptedException {
 
         /** Initializing hardware variables */
 
@@ -51,9 +60,12 @@ public class Robot {
         mechRotation = hashMap.get(DcMotor.class, "mechRotation");
         mechLiftLeft = hashMap.get(DcMotor.class, "mechLiftLeft");
         mechLiftRight = hashMap.get(DcMotor.class, "mechLiftRight");
-        mechExt = hashMap.get(CRServo.class, "mechExt");
+        //mechExt = hashMap.get(CRServo.class, "mechExt");
         mechGrab = hashMap.get(CRServo.class, "mechGrab");
+        modernRoboticsI2cGyro = hashMap.get(ModernRoboticsI2cGyro .class, "gyro");
+        gyro = (IntegratingGyroscope)modernRoboticsI2cGyro;
         telemetry = tele;
+        opMode = mode;
 
         /** Reseting motors' encoders + setting mode of operation
          *  --TeleOp                                             */
@@ -70,17 +82,30 @@ public class Robot {
         driveRearLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         driveRearLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        mechLiftLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //mechLiftLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         mechLiftLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         mechLiftLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        mechLiftRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //mechLiftRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         mechLiftRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         mechLiftRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         if(!teleOp) {
+
+            this.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
             mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             mechRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            while (modernRoboticsI2cGyro.isCalibrating())  {
+                telemetry.addData("gyro", "calib");
+                telemetry.update();
+                sleep(50);
+            }
+
+            telemetry.clear();
+            telemetry.addData("calib", "over");
+            telemetry.update();
 
         }
         else{
@@ -106,7 +131,7 @@ public class Robot {
         mechRotation.setDirection(DcMotor.Direction.FORWARD);
         mechLiftLeft.setDirection(DcMotor.Direction.FORWARD);
         mechLiftRight.setDirection(DcMotor.Direction.FORWARD);
-        mechExt.setDirection(CRServo.Direction.FORWARD);
+       // mechExt.setDirection(CRServo.Direction.FORWARD);
 
 
     }
@@ -182,15 +207,17 @@ public class Robot {
         public void liftMovement(double liftPower){
             liftPower = Range.clip(liftPower, -1, 1) ;
 
+
             //Lowering safety
             if(mechLiftLeft.getCurrentPosition() > MAX_LIFT_POSITION && liftPower > 0){
                 liftPower = 0;
             }
 
             //Raising safety
-            if(mechLiftLeft.getCurrentPosition() < MIN_LIFT_POSITION  && liftPower < 0){
+            if((mechLiftLeft.getCurrentPosition() < MIN_LIFT_POSITION + 5 || mechLiftRight.getCurrentPosition() < MIN_LIFT_POSITION + 5)  && liftPower < 0){
                 liftPower = 0;
             }
+
 
             mechLiftLeft.setPower(liftPower);
             mechLiftRight.setPower(liftPower);
@@ -333,5 +360,61 @@ public class Robot {
 
 
         }
+
+        //rotationType  -->relative or absolute
+        public void absgyroRotation(double desiredTheta, String rotationType){
+            double initialTheta, currentTheta;
+            double error;
+            double outSpeed;
+            boolean CCW = false;
+
+            initialTheta = modernRoboticsI2cGyro.getIntegratedZValue();
+
+            if(rotationType == "relative"){
+                desiredTheta = initialTheta + desiredTheta;
+            }
+
+
+            if(desiredTheta > initialTheta){
+                CCW = true;
+            }
+
+            //converting to rads
+            desiredTheta = (desiredTheta * Math.PI) / 180;
+            initialTheta = (initialTheta * Math.PI) / 180;
+
+            error = desiredTheta - initialTheta;
+
+            while(abs(error) > 0.05 && !opMode.isStopRequested()){
+                outSpeed = 0.6 * sin((Math.PI / (desiredTheta - initialTheta)) * error) + 0.08;
+
+                if(CCW){
+                    outSpeed = -outSpeed;
+                }
+
+                if(abs(outSpeed) > 0.6){
+                    outSpeed = 0.6 * (outSpeed / abs(outSpeed));
+                }
+
+                this.mecanumMovement(0,0, outSpeed);
+
+                currentTheta = modernRoboticsI2cGyro.getIntegratedZValue();
+
+                //current theta to rads
+                currentTheta = (currentTheta * Math.PI) / 180;
+
+                error = desiredTheta - currentTheta;
+
+                telemetry.addData("desired", desiredTheta);
+                telemetry.addData("actual", currentTheta);
+                telemetry.addData("error", error);
+                telemetry.addData("speed", outSpeed);
+                telemetry.update();
+            }
+
+            this.mecanumMovement(0,0,0);
+
+        }
+
 
 }

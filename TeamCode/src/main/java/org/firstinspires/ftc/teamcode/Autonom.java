@@ -13,10 +13,22 @@ public class Autonom extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        robot.init(hardwareMap, false, telemetry);
+        robot.init(hardwareMap, false, telemetry, this);
         waitForStart();
 
         runtime.reset();
+
+        robot.absgyroRotation(30, "absolute");
+
+        sleep(2000);
+
+        robot.absgyroRotation(30, "relative");
+
+        sleep(2000);
+
+        robot.absgyroRotation(360, "absolute");
+
+        stop();
 
         robot.mechRotation.setTargetPosition(-400);
         robot.mechRotation.setPower(0.1);
