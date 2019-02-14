@@ -32,6 +32,9 @@ public class TeleOpMode extends LinearOpMode {
         while(opModeIsActive()){
 
             /**Controller 1 input -> to be driving controller*/
+            //robot.mechLiftLeft.setPower(gamepad2.left_stick_y);
+            //robot.mechLiftRight.setPower(gamepad2.right_stick_y);
+
             mecanumX = -gamepad1.left_stick_x * robot.DRIVING_COEF;
             mecanumY = gamepad1.left_stick_y * robot. DRIVING_COEF;
             turn = gamepad1.right_stick_x;
@@ -116,9 +119,7 @@ public class TeleOpMode extends LinearOpMode {
 
             //Mecanum driving
             robot.mecanumMovement(robot.useBrake(mecanumX, brakeFactor, false), robot.useBrake(mecanumY, brakeFactor, false), robot.useBrake(turn, brakeFactor, false));
-
-
-            telemetry.addData("Color Sensor output: ", robot.getColorSensorData());
+            
             telemetry.addData("Lift position", robot.mechRotation.getCurrentPosition());
             telemetry.addData("FR", robot.driveFrontRight.getCurrentPosition());
             telemetry.addData("Angle", robot.tickToRad(robot.mechRotation.getCurrentPosition()));
