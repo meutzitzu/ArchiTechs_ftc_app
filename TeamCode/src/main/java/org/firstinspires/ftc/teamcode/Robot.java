@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import static java.lang.Thread.sleep;
 
@@ -33,6 +34,8 @@ public class Robot {
         ModernRoboticsI2cGyro modernRoboticsI2cGyro;
         public Telemetry telemetry;
         public LinearOpMode opMode;
+
+        public String Side = "Deploy";
 
     /** Global constants */
         public final double MAX_CRSERVO_INPUT = 0.82;  //max power that can be
@@ -97,6 +100,8 @@ public class Robot {
 
             mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             mechRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            modernRoboticsI2cGyro.calibrate();
 
             while (modernRoboticsI2cGyro.isCalibrating())  {
                 telemetry.addData("gyro", "calib");
@@ -200,6 +205,28 @@ public class Robot {
             driveFrontRight.setPower(FrontRightPower);
             driveRearLeft.setPower(RearLeftPower);
             driveRearRight.setPower(RearRightPower);
+        }
+
+
+        public void mecanumGlobalCoordinatesDriving(double driveX, double driveY, double turn, int gyroGlobalValue){
+
+            double initialDriveX = driveX;
+            double initialDriveY = driveY;
+            double theta;
+
+            theta = (gyroGlobalValue * Math.PI) / 180;
+
+            driveX = cos(theta) * initialDriveX + sin(theta) * initialDriveY;
+            driveY = -sin(theta) * initialDriveX + cos(theta) * initialDriveY;
+            this.mecanumMovement(driveX, driveY, turn);
+
+            telemetry.clear();
+            telemetry.addData("Driving mode", "Global");
+            telemetry.addData("gyro orientated", this.globalGyroValue(Side));
+            telemetry.addData("new driveX", driveX);
+            telemetry.addData("new driveY", driveY);
+            telemetry.update();
+
         }
 
 
@@ -414,6 +441,30 @@ public class Robot {
             }
 
             this.mecanumMovement(0,0,0);
+
+        }
+
+        public int globalGyroValue(String side){
+            int gyroRawZValue = modernRoboticsI2cGyro.getIntegratedZValue();
+            int gyroOrientatedZValue;
+            int gyroReference = 0;
+
+            if(side == "Krater"){
+                gyroReference = 45;
+            }
+            else if(side == "Deploy"){
+                gyroReference = 135;
+            }
+
+            gyroOrientatedZValue = gyroRawZValue + gyroReference;
+
+            gyroOrientatedZValue = gyroOrientatedZValue % 360;
+
+            if(gyroOrientatedZValue < 0){
+                gyroOrientatedZValue = gyroOrientatedZValue + 360;
+            }
+
+            return gyroOrientatedZValue;
 
         }
 

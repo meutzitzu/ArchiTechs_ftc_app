@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class TeleOpMode extends LinearOpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
+    ElapsedTime drivingModeSwitchTimer = new ElapsedTime();
 
     //new object as robot with all properties and methods
     Robot robot = new Robot();
@@ -21,6 +22,7 @@ public class TeleOpMode extends LinearOpMode {
     int armPosition = 0;
     int grabDirection = 1;
     int extensionGrabber = 0; // 1 -> extending, 0 -> idle, -1 -> retracting
+    String drivingMode = "Global";
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -28,9 +30,29 @@ public class TeleOpMode extends LinearOpMode {
 
         waitForStart();
         runtime.reset();
+        drivingModeSwitchTimer.reset();
 
         while(opModeIsActive()){
 
+
+            //driving mode choice
+            if(gamepad1.x){
+                if(drivingModeSwitchTimer.seconds() > 0.5) {
+                    if (drivingMode == "Global") {
+                        drivingMode = "Local";
+
+                        telemetry.clear();
+                        telemetry.addData("Driving mode", drivingMode);
+                        telemetry.update();
+
+                        drivingModeSwitchTimer.reset();
+                    } else if (drivingMode == "Local") {
+                        drivingMode = "Global";
+
+                        drivingModeSwitchTimer.reset();
+                    }
+                }
+            }
 
 
             /**Controller 1 input -> to be driving controller*/
@@ -39,6 +61,21 @@ public class TeleOpMode extends LinearOpMode {
             turn = gamepad1.right_stick_x;
 
             brakeFactor = 1 - gamepad1.left_trigger;
+
+            if(drivingMode == "Global"){
+                robot.mecanumGlobalCoordinatesDriving(robot.useBrake(mecanumX, brakeFactor, false),
+                        robot.useBrake(mecanumY, brakeFactor, false),
+                        robot.useBrake(turn, brakeFactor, false),
+                        robot.globalGyroValue(robot.Side));
+            }
+            else if(drivingMode == "Local"){
+                robot.mecanumMovement(robot.useBrake(mecanumX, brakeFactor, false),
+                        robot.useBrake(mecanumY, brakeFactor, false),
+                        robot.useBrake(turn, brakeFactor, false));
+            }
+
+
+
 
             if(!gamepad1.dpad_left && !gamepad1.dpad_right)
                 extensionGrabber = 0;
@@ -101,9 +138,6 @@ public class TeleOpMode extends LinearOpMode {
 
 
 
-            telemetry.addData("rotating arm pos", robot.driveRearLeft.getCurrentPosition());
-            telemetry.addData("rotating arm speed", robot.driveRearLeft.getPower());
-
             //Rotation of the main arm
             if (gamepad1.dpad_up) {
                 robot.rotationMovement(true, brakeFactor);
@@ -143,14 +177,6 @@ public class TeleOpMode extends LinearOpMode {
 
 
 
-            //Mecanum driving
-            robot.mecanumMovement(robot.useBrake(mecanumX, brakeFactor, false), robot.useBrake(mecanumY, brakeFactor, false), robot.useBrake(turn, brakeFactor, false));
-
-            telemetry.addData("Lift position left", robot.mechLiftLeft.getCurrentPosition());
-            telemetry.addData("Lift position right", robot.mechLiftRight.getCurrentPosition());
-            telemetry.addData("FR", robot.driveFrontRight.getCurrentPosition());
-            telemetry.addData("Angle", robot.tickToRad(robot.mechRotation.getCurrentPosition()));
-            telemetry.update();
         }
     }
 }

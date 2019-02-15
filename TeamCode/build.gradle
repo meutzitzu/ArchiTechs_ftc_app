@@ -16,7 +16,10 @@ apply from: '../build.common.gradle'
 apply plugin: 'kotlin-android'
 repositories {
     mavenCentral()
+    flatDir {
+        dirs '../libs'
+    }
 }
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
