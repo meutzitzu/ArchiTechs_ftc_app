@@ -35,14 +35,14 @@ public class Robot {
         public Telemetry telemetry;
         public LinearOpMode opMode;
 
-        public String Side = "Deploy";
+        public String Side = "Krater";
 
     /** Global constants */
         public final double MAX_CRSERVO_INPUT = 0.82;  //max power that can be
         public final double LIFT_SPEED = 1;
         public final double ROTATION_SPEED = 0.4;  //max angular velocity of the arm
         public final double MIN_LIFT_POSITION = 0;
-        public final int MAX_LIFT_POSITION = 25000;
+        public final int MAX_LIFT_POSITION = 24000;
         public final int MAX_ROTATION = 0;  //will probably be ignored; used only as reference for minimum position
         public final int MIN_ROTATION = -1800;  //useful
         public final int ROTATION_LENGTH = MAX_ROTATION - MIN_ROTATION; //
@@ -354,28 +354,28 @@ public class Robot {
         //          --"strafing" : right -> ticks > 0
         public void setDrivetrainPosition(int ticks, String movementType, double maxSpeed){
 
-            this.setDrivetrainMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            this.setDrivetrainMode(DcMotor.RunMode.RUN_TO_POSITION);
+
 
 
             switch(movementType){
                 case "translation":
-                    driveFrontLeft.setTargetPosition(-ticks);
-                    driveFrontRight.setTargetPosition(-ticks);
-                    driveRearLeft.setTargetPosition(-ticks);
-                    driveRearRight.setTargetPosition(-ticks);
+                    driveFrontLeft.setTargetPosition(this.driveFrontLeft.getCurrentPosition()-ticks);
+                    driveFrontRight.setTargetPosition(this.driveFrontRight.getCurrentPosition()-ticks);
+                    driveRearLeft.setTargetPosition(this.driveRearLeft.getCurrentPosition()-ticks);
+                    driveRearRight.setTargetPosition(this.driveRearRight.getCurrentPosition()-ticks);
                     break;
                 case "rotation":
-                    driveFrontLeft.setTargetPosition(ticks);
-                    driveFrontRight.setTargetPosition(-ticks);
-                    driveRearLeft.setTargetPosition(ticks);
-                    driveRearRight.setTargetPosition(-ticks);
+                    driveFrontLeft.setTargetPosition(this.driveFrontLeft.getCurrentPosition()+ticks);
+                    driveFrontRight.setTargetPosition(this.driveFrontRight.getCurrentPosition()-ticks);
+                    driveRearLeft.setTargetPosition(this.driveRearLeft.getCurrentPosition()+ticks);
+                    driveRearRight.setTargetPosition(this.driveRearRight.getCurrentPosition()-ticks);
                     break;
                 case "strafing":
-                    driveFrontLeft.setTargetPosition(-ticks);
-                    driveFrontRight.setTargetPosition(ticks);
-                    driveRearLeft.setTargetPosition(ticks);
-                    driveRearRight.setTargetPosition(-ticks);
+                    driveFrontLeft.setTargetPosition(this.driveFrontLeft.getCurrentPosition()-ticks);
+                    driveFrontRight.setTargetPosition(this.driveFrontRight.getCurrentPosition()+
+                            ticks);
+                    driveRearLeft.setTargetPosition(this.driveRearLeft.getCurrentPosition()+ticks);
+                    driveRearRight.setTargetPosition(this.driveRearRight.getCurrentPosition()-ticks);
                     break;
 
             }

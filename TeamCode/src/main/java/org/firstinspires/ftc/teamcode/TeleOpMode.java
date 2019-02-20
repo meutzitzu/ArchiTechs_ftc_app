@@ -175,7 +175,8 @@ public class TeleOpMode extends LinearOpMode {
                 grabDirection = 1;
             }
 
-
+            telemetry.addData("Lift position", robot.mechLiftLeft.getCurrentPosition());
+            telemetry.update();
 
         }
     }
