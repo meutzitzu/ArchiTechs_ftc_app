@@ -199,13 +199,13 @@ public class Autonom extends LinearOpMode {
             }
 
             if(goldMineralXL > 700){
-                detectionDirection = -1;
+                detectionDirection = 1;
             }
             else if(goldMineralXL < 560){
-                detectionDirection = +1;
+                detectionDirection = -1;
             }
 
-            //robot.mecanumMovement(0,0,DETECTIONSPEED * detectionDirection);
+            robot.mecanumMovement(0,0,DETECTIONSPEED * detectionDirection);
 
             telemetry.addData("mineral", goldMineralXL);
             telemetry.update();
@@ -213,10 +213,11 @@ public class Autonom extends LinearOpMode {
         }
 
         telemetry.clear();
+        telemetry.addLine("out of the while :)");
         telemetry.addData("mineral position", goldMineralXL);
         telemetry.update();
 
-        robot.setDrivetrainPosition(-2000, "translation", .3);
+        robot.setDrivetrainPosition(-2300, "translation", .3);
 
 //        sleep(3000);
 
