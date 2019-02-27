@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IntegratingGyroscope;
 import com.qualcomm.robotcore.util.Range;
@@ -26,12 +27,14 @@ public class Robot {
         public DcMotor driveRearLeft = null;
         public DcMotor driveRearRight = null;
         public DcMotor mechRotation = null;  //arm movement
+        public DcMotor mechExt = null;
         public DcMotor mechLiftLeft = null;
         public DcMotor mechLiftRight = null;
         //public CRServo mechExt = null;  //extension of arm
         public CRServo mechGrab = null;  //servo used on the grabber
         IntegratingGyroscope gyro;
         ModernRoboticsI2cGyro modernRoboticsI2cGyro;
+        public DistanceSensor distanceSensor;
         public Telemetry telemetry;
         public LinearOpMode opMode;
 
@@ -42,12 +45,14 @@ public class Robot {
         public final double LIFT_SPEED = 1;
         public final double ROTATION_SPEED = 0.4;  //max angular velocity of the arm
         public final double MIN_LIFT_POSITION = 0;
-        public final int MAX_LIFT_POSITION = 24000;
+        public final int MAX_LIFT_POSITION = 22000;
         public final int MAX_ROTATION = 0;  //will probably be ignored; used only as reference for minimum position
         public final int MIN_ROTATION = -1800;  //useful
         public final int ROTATION_LENGTH = MAX_ROTATION - MIN_ROTATION; //
         public double PI = 3.14159;
         public final double DRIVING_COEF = 0.6; //max speed is a little to much for our competent drivers
+        public final double MAX_EXT = 1700;
+        public final double MIN_EXT = 0;
 
 
     /** Auxiliary variables */
@@ -64,8 +69,9 @@ public class Robot {
         mechRotation = hashMap.get(DcMotor.class, "mechRotation");
         mechLiftLeft = hashMap.get(DcMotor.class, "mechLiftLeft");
         mechLiftRight = hashMap.get(DcMotor.class, "mechLiftRight");
-        //mechExt = hashMap.get(CRServo.class, "mechExt");
+        mechExt = hashMap.get(DcMotor.class, "mechExt");
         mechGrab = hashMap.get(CRServo.class, "mechGrab");
+        distanceSensor = hashMap.get(DistanceSensor.class, "distanceSensor");
         modernRoboticsI2cGyro = hashMap.get(ModernRoboticsI2cGyro .class, "gyro");
         gyro = (IntegratingGyroscope)modernRoboticsI2cGyro;
         telemetry = tele;
@@ -94,6 +100,10 @@ public class Robot {
         mechLiftRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         mechLiftRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        mechExt.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        mechExt.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        mechExt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         if(!teleOp) {
 
             this.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -119,7 +129,6 @@ public class Robot {
 
             this.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
-        mechRotation.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
 
@@ -137,7 +146,7 @@ public class Robot {
         mechRotation.setDirection(DcMotor.Direction.FORWARD);
         mechLiftLeft.setDirection(DcMotor.Direction.FORWARD);
         mechLiftRight.setDirection(DcMotor.Direction.FORWARD);
-       // mechExt.setDirection(CRServo.Direction.FORWARD);
+        mechExt.setDirection(DcMotor.Direction.REVERSE);
 
 
     }
@@ -186,13 +195,19 @@ public class Robot {
         *   --driveX & driveY ->translation (even diagonally)
         *   --turn -> rotational
         *   note: don't strafe for your own good
-        *   Can be used with robot.useBrake()                */
+        *   Can be used with robot.useBrake()
+         *   CW -> turn > 0
+         *   */
 
         public void mecanumMovement(double driveX, double driveY, double turn){
             double FrontLeftPower;
             double FrontRightPower;
             double RearLeftPower;
             double RearRightPower;
+
+            if(this.driveRearLeft.getMode() != DcMotor.RunMode.RUN_USING_ENCODER){
+                this.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
 
             /** Clip value between -1 & 1 */
             FrontLeftPower    = Range.clip(( driveX + driveY) - turn, -1.0, 1.0) ;
@@ -237,7 +252,7 @@ public class Robot {
 
 
             //Lowering safety
-            if(mechLiftLeft.getCurrentPosition() > MAX_LIFT_POSITION && liftPower > 0){
+            if(((mechLiftLeft.getCurrentPosition() > MAX_LIFT_POSITION) || (mechLiftRight.getCurrentPosition() > MAX_LIFT_POSITION))&& liftPower > 0){
                 liftPower = 0;
             }
 
@@ -355,6 +370,9 @@ public class Robot {
         public void setDrivetrainPosition(int ticks, String movementType, double maxSpeed){
 
 
+            if(driveRearLeft.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
+                this.setDrivetrainMode(DcMotor.RunMode.RUN_TO_POSITION);
+            }
 
 
             switch(movementType){
@@ -371,11 +389,10 @@ public class Robot {
                     driveRearRight.setTargetPosition(this.driveRearRight.getCurrentPosition()-ticks);
                     break;
                 case "strafing":
-                    driveFrontLeft.setTargetPosition(this.driveFrontLeft.getCurrentPosition()-ticks);
-                    driveFrontRight.setTargetPosition(this.driveFrontRight.getCurrentPosition()+
-                            ticks);
-                    driveRearLeft.setTargetPosition(this.driveRearLeft.getCurrentPosition()+ticks);
-                    driveRearRight.setTargetPosition(this.driveRearRight.getCurrentPosition()-ticks);
+                    driveFrontLeft.setTargetPosition(this.driveFrontLeft.getCurrentPosition() + ticks);
+                    driveFrontRight.setTargetPosition(this.driveFrontRight.getCurrentPosition()- ticks);
+                    driveRearLeft.setTargetPosition(this.driveRearLeft.getCurrentPosition() - ticks);
+                    driveRearRight.setTargetPosition(this.driveRearRight.getCurrentPosition() + ticks);
                     break;
 
             }
@@ -395,6 +412,8 @@ public class Robot {
             double error;
             double outSpeed;
             boolean CCW = false;
+
+            this.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
             initialTheta = modernRoboticsI2cGyro.getIntegratedZValue();
 

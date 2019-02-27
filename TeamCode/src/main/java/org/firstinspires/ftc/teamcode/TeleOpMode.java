@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 @TeleOp(name="OpMode", group="Linear OpMode")
 public class TeleOpMode extends LinearOpMode {
 
@@ -33,7 +35,6 @@ public class TeleOpMode extends LinearOpMode {
         drivingModeSwitchTimer.reset();
 
         while(opModeIsActive()){
-
 
             //driving mode choice
             if(gamepad1.x){
@@ -79,25 +80,48 @@ public class TeleOpMode extends LinearOpMode {
 
             if(!gamepad1.dpad_left && !gamepad1.dpad_right)
                 extensionGrabber = 0;
-            else if(gamepad1.dpad_left)
+            else if(gamepad1.dpad_left) {
                 extensionGrabber = 1;
-            else if(gamepad1.dpad_right)
+                if(robot.mechExt.getMode() != DcMotor.RunMode.RUN_USING_ENCODER)
+                robot.mechExt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
+            else if(gamepad1.dpad_right) {
                 extensionGrabber = -1;
+                if(robot.mechExt.getMode() != DcMotor.RunMode.RUN_USING_ENCODER)
+                robot.mechExt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
 
             /**Controller 2 input -> to be mineral collection controller*/
             brakeFactor_2 = 1 - gamepad2.left_trigger;
 
 
             //mechExt Servo
-            if(extensionGrabber == 0)
+            if(extensionGrabber == 0) {
                 mechExtSpeed = 0;
-            else if(extensionGrabber == 1)
-                mechExtSpeed = 0.85;
-            else if(extensionGrabber == -1)
-                mechExtSpeed = -0.85;
+            }
+            else if(extensionGrabber == 1) {
+                mechExtSpeed = 0.60;
+                if(robot.mechExt.getCurrentPosition() > robot.MAX_EXT - 10){
+                    mechExtSpeed = 0;
+                }
+            }
+            else if(extensionGrabber == -1) {
+                mechExtSpeed = -0.60;
+                if(robot.mechExt.getCurrentPosition() < robot.MIN_EXT + 10){
+                    mechExtSpeed = 0;
+                }
+            }
 
-
-            //robot.mechExt.setPower(robot.useBrake(mechExtSpeed, brakeFactor, true));
+            if(mechExtSpeed == 0){
+                if(robot.mechExt.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
+                    robot.mechExt.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    robot.mechExt.setTargetPosition(robot.mechExt.getCurrentPosition());
+                    robot.mechExt.setPower(0.5);
+                }
+            }
+            else {
+                robot.mechExt.setPower(robot.useBrake(mechExtSpeed, brakeFactor, false));
+            }
 
             //Lift motors
             if(gamepad1.b){
@@ -175,7 +199,10 @@ public class TeleOpMode extends LinearOpMode {
                 grabDirection = 1;
             }
 
-            telemetry.addData("Lift position", robot.mechLiftLeft.getCurrentPosition());
+            telemetry.addData("Lift position", robot.mechLiftLeft.getCurrentPosition() + " " + robot.mechLiftRight.getCurrentPosition());
+            telemetry.addData("Lift ext", robot.mechExt.getCurrentPosition());
+            telemetry.addData("Drivetrain pos", robot.driveFrontLeft.getCurrentPosition());
+            telemetry.addData("Distance from sensor: ", robot.distanceSensor.getDistance(DistanceUnit.CM));
             telemetry.update();
 
         }
