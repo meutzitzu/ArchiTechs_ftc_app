@@ -231,6 +231,11 @@ public class TeleOpMode extends LinearOpMode {
                 grabDirection = 1;
             }
 
+
+            //stopper servo
+            if()
+
+
             telemetry.addData("Lift position", robot.mechLiftLeft.getCurrentPosition() + " " + robot.mechLiftRight.getCurrentPosition());
             telemetry.addData("Lift ext", robot.mechExt.getCurrentPosition());
             telemetry.addData("Gyro pos", robot.modernRoboticsI2cGyro.getIntegratedZValue());

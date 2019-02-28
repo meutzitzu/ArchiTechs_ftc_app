@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IntegratingGyroscope;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -31,7 +32,7 @@ public class Robot {
         public DcMotor mechExt = null;
         public DcMotor mechLiftLeft = null;
         public DcMotor mechLiftRight = null;
-        //public CRServo mechExt = null;  //extension of arm
+        public Servo mechStopper = null;
         public CRServo mechGrab = null;  //servo used on the grabber
         IntegratingGyroscope gyro;
         ModernRoboticsI2cGyro modernRoboticsI2cGyro;
@@ -51,9 +52,12 @@ public class Robot {
         public final int MIN_ROTATION = -1800;  //useful
         public final int ROTATION_LENGTH = MAX_ROTATION - MIN_ROTATION; //
         public double PI = 3.14159;
-        public final double DRIVING_COEF = 0.4; //max speed is a little to much for our competent drivers
+        public final double DRIVING_COEF = 0.7; //max speed is a little to much for our competent drivers
         public final double MAX_EXT = 1700;
         public final double MIN_EXT = 0;
+        public final double STOPPER_OPEN = 0;
+        public final double STOPPER_CLOSED = 0;
+
 
 
     /** Auxiliary variables */
@@ -72,6 +76,7 @@ public class Robot {
         mechLiftRight = hashMap.get(DcMotor.class, "mechLiftRight");
         mechExt = hashMap.get(DcMotor.class, "mechExt");
         mechGrab = hashMap.get(CRServo.class, "mechGrab");
+        mechStopper = hashMap.get(Servo.class, "mechStopper");
         distanceSensor = hashMap.get(DistanceSensor.class, "distanceSensor");
         modernRoboticsI2cGyro = hashMap.get(ModernRoboticsI2cGyro .class, "gyro");
         gyro = (IntegratingGyroscope)modernRoboticsI2cGyro;
@@ -104,6 +109,10 @@ public class Robot {
         mechExt.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         mechExt.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         mechExt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+
+
+
 
         if(!teleOp) {
 
