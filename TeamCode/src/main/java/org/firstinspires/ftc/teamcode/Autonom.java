@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
@@ -66,9 +67,7 @@ public class Autonom extends LinearOpMode {
 
         initiateRecognition();
 
-        while(opModeIsActive()){
-
-        }
+        moveToEnd();
 
 
 
@@ -122,6 +121,105 @@ public class Autonom extends LinearOpMode {
 
     }
 
+    private void moveToEnd() {
+
+        goBackAfterHittingMineral();
+
+        if(isStopRequested())
+            return;
+
+        rotateTillParallelToInitialPosition();
+
+        if(isStopRequested())
+            return;
+
+        moveNearWallAndAlign();
+
+        if(isStopRequested())
+            return;
+
+        moveToSquareAndReleaseToy();
+
+        if(isStopRequested())
+            return;
+
+        moveAndPutTheGrabberInCrater();
+
+
+
+    }
+
+    private void moveAndPutTheGrabberInCrater() {
+
+        double distanceFromBackWall = robot.distanceSensor.getDistance(DistanceUnit.CM);
+
+        while(distanceFromBackWall < 240){
+            robot.mecanumMovement(0, -.5, 0);
+            distanceFromBackWall = robot.distanceSensor.getDistance(DistanceUnit.CM);
+        }
+
+        robot.mecanumMovement(0, 0, 0);
+
+        releaseGrabber();
+
+    }
+
+    private void releaseGrabber() {
+
+    }
+
+    private void moveToSquareAndReleaseToy() {
+
+        double currentDistanceToObject = robot.distanceSensor.getDistance(DistanceUnit.CM);
+
+        while(currentDistanceToObject > 60 && !isStopRequested()){
+            double newDistanceDetected = robot.distanceSensor.getDistance(DistanceUnit.CM);
+            if(currentDistanceToObject - newDistanceDetected > 5){
+                robot.mecanumMovement(0, 0, 0);
+
+            } else {
+                currentDistanceToObject = newDistanceDetected;
+                robot.mecanumMovement(0, .5, 0);
+            }
+        }
+
+        robot.mecanumMovement(0, 0, 0);
+
+    }
+
+    private void moveNearWallAndAlign() {
+
+        // moving toward the wall
+        while(robot.distanceSensor.getDistance(DistanceUnit.CM) > 30 && !isStopRequested()){
+            if(robot.distanceSensor.getDistance(DistanceUnit.CM) < 50)
+                robot.mecanumMovement(0, .2, 0);
+            else
+                robot.mecanumMovement(0, .5, 0);
+
+            telemetry.addLine("Distance from sensor: " + robot.distanceSensor.getDistance(DistanceUnit.CM));
+            telemetry.update();
+        }
+        robot.mecanumMovement(0, 0, 0);
+
+        //alignment procedure
+        robot.absgyroRotation(135, "absolute");
+
+    }
+
+    private void rotateTillParallelToInitialPosition() {
+        robot.absgyroRotation(0, "absolute");
+    }
+
+    private void goBackAfterHittingMineral() {
+        robot.setDrivetrainPosition(1600, "translation", .5);
+
+        while(robot.driveFrontLeft.isBusy() && !isStopRequested()){
+            telemetry.addLine("Going back");
+        }
+    }
+
+
+
 
 
     private  void  initiateRecognition(){
@@ -137,7 +235,7 @@ public class Autonom extends LinearOpMode {
 
         int leftPosition = -42, midPosition = -86, rightPosition = -120;
 
-        int hittingMineralDistance;
+        int hittingMineralDistance = 0;
 
 
         int k;
@@ -393,10 +491,11 @@ public class Autonom extends LinearOpMode {
         telemetry.addData("goldPos", goldMineralPosition);
         telemetry.update();
 
+
         switch (goldMineralPosition){
             case 1:
                 robot.absgyroRotation(leftPosition, "absolute");
-                hittingMineralDistance = -3000;
+                hittingMineralDistance = -3200;
                 break;
 
             case 2:
@@ -406,11 +505,11 @@ public class Autonom extends LinearOpMode {
 
             case 3:
                 robot.absgyroRotation(rightPosition, "absolute");
-                hittingMineralDistance = -3000;
+                hittingMineralDistance = -3200;
                 break;
         }
 
-        robot.setDrivetrainPosition(-2500, "translation", .5);
+        robot.setDrivetrainPosition(hittingMineralDistance, "translation", .5);
 
         while(opModeIsActive()){
 
