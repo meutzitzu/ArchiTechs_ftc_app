@@ -444,28 +444,25 @@ public class Autonom extends LinearOpMode {
         telemetry.addData("Pos", extremecoordinatesMinerals[3][1] + " " + extremecoordinatesMinerals[3][2] +" " + extremecoordinatesMinerals[3][3]);
 
         for(int i = 1; i <= 3; i++){
-            if(extremecoordinatesMinerals[3][i] <= 65){
-                if(mineralSequence[1] == 0) {
-                    mineralSequence[1] = extremecoordinatesMinerals[0][i];
-                }
-                else{
-                    mineralSequence[1] = extremecoordinatesMinerals[0][i];
-                }
-            }
-            else if(extremecoordinatesMinerals[3][i] > 65 && extremecoordinatesMinerals[3][i] < 95){
-                if(mineralSequence[2] == 0) {
-                    mineralSequence[2] = extremecoordinatesMinerals[0][i];
-                }
-                else{
-                    mineralSequence[2] = extremecoordinatesMinerals[0][i];
-                }
-            }
-            else if(extremecoordinatesMinerals[3][i] >= 95){
-                if(mineralSequence[3] == 0) {
-                    mineralSequence[3] = extremecoordinatesMinerals[0][i];
-                }
-                else{
-                    mineralSequence[3] = extremecoordinatesMinerals[0][i];
+            if(extremecoordinatesMinerals[0][i] != 0) {
+                if (extremecoordinatesMinerals[3][i] <= 70) {
+                    if (mineralSequence[1] == 0) {
+                        mineralSequence[1] = extremecoordinatesMinerals[0][i];
+                    } else {
+                        mineralSequence[2] = extremecoordinatesMinerals[0][i];
+                    }
+                } else if (extremecoordinatesMinerals[3][i] > 70 && extremecoordinatesMinerals[3][i] < 100) {
+                    if (mineralSequence[2] == 0) {
+                        mineralSequence[2] = extremecoordinatesMinerals[0][i];
+                    } else {
+                        mineralSequence[3] = extremecoordinatesMinerals[0][i];
+                    }
+                } else if (extremecoordinatesMinerals[3][i] >= 100) {
+                    if (mineralSequence[3] == 0) {
+                        mineralSequence[3] = extremecoordinatesMinerals[0][i];
+                    } else {
+                        ///
+                    }
                 }
             }
         }
