@@ -146,7 +146,6 @@ public class Autonom extends LinearOpMode {
         moveAndPutTheGrabberInCrater();
 
 
-
     }
 
     private void moveAndPutTheGrabberInCrater() {
@@ -174,7 +173,7 @@ public class Autonom extends LinearOpMode {
 
         while(currentDistanceToObject > 60 && !isStopRequested()){
             double newDistanceDetected = robot.distanceSensor.getDistance(DistanceUnit.CM);
-            if(currentDistanceToObject - newDistanceDetected > 5){
+            if(currentDistanceToObject - newDistanceDetected > 20){
                 robot.mecanumMovement(0, 0, 0);
 
             } else {
@@ -508,12 +507,12 @@ public class Autonom extends LinearOpMode {
 
         robot.setDrivetrainPosition(hittingMineralDistance, "translation", .5);
 
-        while(opModeIsActive()){
+//        while(opModeIsActive()){
+//
+//        }
 
-        }
 
-
-        telemetry.addData("angle", robot.modernRoboticsI2cGyro.getIntegratedZValue());
+//        telemetry.addData("angle", robot.modernRoboticsI2cGyro.getIntegratedZValue());
 
 
 
@@ -521,26 +520,26 @@ public class Autonom extends LinearOpMode {
         //robot.setDrivetrainPosition(-1000, "translation", 0.5);
 
 
-
-        int minxl=0;
-        int minx2;
-
-        if(goldMineral==true){
-
-            while (goldMineralX<minxl) {
-                robot.setDrivetrainPosition(robot.driveFrontLeft.getCurrentPosition()-40, "rotating", .3);
-
-                while((robot.driveFrontLeft.isBusy() || robot.driveFrontRight.isBusy()
-                        || robot.driveRearLeft.isBusy() || robot.driveRearRight.isBusy()) && !isStopRequested()){
-                    telemetry.addData("Drivetrain front left", robot.driveFrontLeft.getCurrentPosition());
-                    telemetry.addData("Drivetrain front right", robot.driveFrontRight.getCurrentPosition());
-                    telemetry.addData("Drivetrain rear left", robot.driveRearLeft.getCurrentPosition());
-                    telemetry.addData("Drivetrain rear right", robot.driveRearRight.getCurrentPosition());
-                    telemetry.update();
-                }
-
-            }
-            }
+//
+//        int minxl=0;
+//        int minx2;
+//
+//        if(goldMineral==true){
+//
+//            while (goldMineralX<minxl) {
+//                robot.setDrivetrainPosition(robot.driveFrontLeft.getCurrentPosition()-40, "rotating", .3);
+//
+//                while((robot.driveFrontLeft.isBusy() || robot.driveFrontRight.isBusy()
+//                        || robot.driveRearLeft.isBusy() || robot.driveRearRight.isBusy()) && !isStopRequested()){
+//                    telemetry.addData("Drivetrain front left", robot.driveFrontLeft.getCurrentPosition());
+//                    telemetry.addData("Drivetrain front right", robot.driveFrontRight.getCurrentPosition());
+//                    telemetry.addData("Drivetrain rear left", robot.driveRearLeft.getCurrentPosition());
+//                    telemetry.addData("Drivetrain rear right", robot.driveRearRight.getCurrentPosition());
+//                    telemetry.update();
+//                }
+//
+//            }
+//            }
 
         }
 
