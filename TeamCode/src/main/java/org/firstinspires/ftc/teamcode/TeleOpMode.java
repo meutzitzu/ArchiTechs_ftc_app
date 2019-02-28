@@ -21,10 +21,12 @@ public class TeleOpMode extends LinearOpMode {
     double mecanumX, mecanumY;
     double turn;
     double mechExtSpeed = 0;
+    double rotationspeed = 0;
     int armPosition = 0;
     int grabDirection = 1;
     int extensionGrabber = 0; // 1 -> extending, 0 -> idle, -1 -> retracting
-    String drivingMode = "Global";
+    String drivingMode = "Local";
+    boolean rotationAdjust = true;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -37,7 +39,7 @@ public class TeleOpMode extends LinearOpMode {
         while(opModeIsActive()){
 
             //driving mode choice
-            if(gamepad1.x){
+            if(gamepad1.x && (1==0)){
                 if(drivingModeSwitchTimer.seconds() > 0.5) {
                     if (drivingMode == "Global") {
                         drivingMode = "Local";
@@ -60,6 +62,9 @@ public class TeleOpMode extends LinearOpMode {
             mecanumX = -gamepad1.left_stick_x * robot.DRIVING_COEF;
             mecanumY = gamepad1.left_stick_y * robot. DRIVING_COEF;
             turn = gamepad1.right_stick_x;
+
+            /** Controller 2 input -> to be aux controller */
+            rotationspeed = gamepad2.left_stick_y;
 
             brakeFactor = 1 - gamepad1.left_trigger;
 
@@ -124,6 +129,7 @@ public class TeleOpMode extends LinearOpMode {
             }
 
             //Lift motors
+
             if(gamepad1.b){
                 robot.liftMovement(robot.useBrake(robot.LIFT_SPEED, brakeFactor, false));
             }
@@ -133,6 +139,7 @@ public class TeleOpMode extends LinearOpMode {
             else if(!gamepad1.a && !gamepad1.b && !gamepad2.a && !gamepad2.b && !gamepad2.x && !gamepad2.y){
                 robot.liftMovement(0);
             }
+
 
                 //adjusting lift motors if needed -> 2nd controller
 
@@ -151,6 +158,10 @@ public class TeleOpMode extends LinearOpMode {
             }
 
 
+
+            //patching for arm movement
+
+
             if(gamepad2.right_bumper){
                 robot.mechLiftRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 robot.mechLiftLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -163,10 +174,11 @@ public class TeleOpMode extends LinearOpMode {
 
 
             //Rotation of the main arm
+            /*
             if (gamepad1.dpad_up) {
-                robot.rotationMovement(true, brakeFactor);
+                robot.rotationMovementWIP(true, brakeFactor);
             } else if (gamepad1.dpad_down) {
-                robot.rotationMovement(false, brakeFactor);
+                robot.rotationMovementWIP(false, brakeFactor);
             } else {
                 if(robot.mechRotation.getCurrentPosition() <= robot.MIN_ROTATION + 10){
                     if(robot.mechRotation.getMode() != DcMotor.RunMode.RUN_TO_POSITION) {
@@ -180,6 +192,26 @@ public class TeleOpMode extends LinearOpMode {
                     robot.mechRotation.setPower(0);
                 }
             }
+            */
+
+            //rotation movement
+
+            if(gamepad2.right_bumper == true){
+                rotationAdjust = !rotationAdjust;
+                if(rotationAdjust){
+                    robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    robot.mechRotation.setPower(0);
+                    robot.mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                }
+            }
+
+            if(rotationAdjust){
+                robot.mechRotation.setPower(rotationspeed * robot.ROTATION_SPEED_MODIFIER);
+            }
+            else {
+                robot.rotationMovement(rotationspeed * robot.ROTATION_SPEED_MODIFIER);
+            }
+
 
 
             //Grabber servo
@@ -201,7 +233,7 @@ public class TeleOpMode extends LinearOpMode {
 
             telemetry.addData("Lift position", robot.mechLiftLeft.getCurrentPosition() + " " + robot.mechLiftRight.getCurrentPosition());
             telemetry.addData("Lift ext", robot.mechExt.getCurrentPosition());
-            telemetry.addData("Drivetrain pos", robot.driveFrontLeft.getCurrentPosition());
+            telemetry.addData("Gyro pos", robot.modernRoboticsI2cGyro.getIntegratedZValue());
             telemetry.addData("Distance from sensor: ", robot.distanceSensor.getDistance(DistanceUnit.CM));
             telemetry.update();
 

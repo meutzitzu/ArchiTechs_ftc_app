@@ -18,7 +18,7 @@ public class Autonom extends LinearOpMode {
     private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
     private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
     private static final String LABEL_SILVER_MINERAL = "Silver Mineral";
-    private static final double DETECTIONSPEED = 0.3;
+    private static final double DETECTIONSPEED = 0.25;
     private static final double MAXDETECTIONTIME = 100;
     public int detectionDirection = 1;
     private int initialLiftPosition;
@@ -39,6 +39,13 @@ public class Autonom extends LinearOpMode {
 
         robot.init(hardwareMap, false, telemetry, this);
         initStuff();
+
+        if(robot.mechLiftRight.getCurrentPosition() == 0){
+            telemetry.addLine("Lift already up \n Robot won't proceed any further");
+            telemetry.update();
+
+        }
+
 
         telemetry.update();
 
@@ -119,122 +126,312 @@ public class Autonom extends LinearOpMode {
 
     private  void  initiateRecognition(){
 
-        int goldMineralXL = -1;
-        int goldMineralXR = -1;
+        int goldMineralX = -1;
+        int goldMineralPosition = -1; //can be 1, 2, 3
+        int silverMineralX = -1, previoussilverMineralX = -1;
+        int[] mineralSequence = new int[] {0,0,0,0}; // 2->gold mineral
+                               // 1->silver mineral
+        int [][] extremecoordinatesMinerals = new int[][] {{0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}};
+        int mineralsRecognized = 0; // sum of the first 3 elements of the array
+        int mineralCounter, previousmineralsRecognized = 0;
+
+        int leftPosition = -42, midPosition = -86, rightPosition = -120;
+
+        int hittingMineralDistance;
+
+
+        int k;
+
+        for(int i = 1; i <= 3; i++){
+            mineralSequence[i] = 0;
+        }
 
 
         if (tfod != null) {
             tfod.activate();
         }
+//
+//        while(!goldMineral && tfod != null && !isStopRequested() && mineralRetrievalTimer.seconds() <= MAXDETECTIONTIME) {
+//
+//            if(robot.modernRoboticsI2cGyro.getIntegratedZValue() < -125 && detectionDirection == 1){
+//                detectionDirection = -1;
+//            }
+//            else if(robot.modernRoboticsI2cGyro.getIntegratedZValue() > -45 && detectionDirection == -1){
+//                detectionDirection = 1;
+//            }
+//            robot.mecanumMovement(0,0,detectionDirection * DETECTIONSPEED);
+//
+//            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+//
+//
+//            if(updatedRecognitions != null) {
+//                for (Recognition recognition : updatedRecognitions) {
+//                    if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
+//                        goldMineral = true;
+//                        goldMineralX = (int) recognition.getLeft();
+//                        goldMineralXR = (int) recognition.getRight();
+//                        telemetry.clear();
+//                        telemetry.addData("Gold mineral", goldMineralX);
+//                    }
+//                }
+//            }
+//            else{
+//                telemetry.clear();
+//                telemetry.addData("Gyro Value", robot.modernRoboticsI2cGyro.getIntegratedZValue());
+//                telemetry.addData("No", "Object");
+//            }
+//            telemetry.update();
+//
+//        }
+//
+//        robot.mecanumMovement(0,0,0);
+//
+//        telemetry.addData("mineralposition", goldMineralX);
+//        telemetry.update();
+//
+//        sleep(1000);
+//
+//        while(goldMineral == true && !(goldMineralX < 450 && goldMineralX > 175) && !isStopRequested()) {
+//            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+//
+//            if (updatedRecognitions != null) {
+//                for (Recognition recognition : updatedRecognitions) {
+//                    if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
+//                        goldMineralX = (int) recognition.getLeft();
+//                    }
+//                }
+//            }
+//
+//            if(goldMineralX > 700){
+//                detectionDirection = 1;
+//            }
+//            else if(goldMineralX < 560){
+//                detectionDirection = -1;
+//            }
+//
+//            robot.mecanumMovement(0,0,DETECTIONSPEED * detectionDirection);
+//
+//            telemetry.addData("mineral", goldMineralX);
+//            telemetry.update();
+//
+//        }
+//
+//        telemetry.clear();
+//        telemetry.addLine("out of the while :)");
+//        telemetry.addData("mineral position", goldMineralX);
+//        telemetry.update();
 
-        while(!goldMineral && tfod != null && !isStopRequested() && mineralRetrievalTimer.seconds() <= MAXDETECTIONTIME) {
+
+        while(tfod != null && mineralsRecognized < 2 && !isStopRequested()){
+
+            k = 0;
+
+            mineralsRecognized = 0;
 
             if(robot.modernRoboticsI2cGyro.getIntegratedZValue() < -125 && detectionDirection == 1){
-                detectionDirection = -1;
+               detectionDirection = -1;
             }
             else if(robot.modernRoboticsI2cGyro.getIntegratedZValue() > -45 && detectionDirection == -1){
                 detectionDirection = 1;
             }
             robot.mecanumMovement(0,0,detectionDirection * DETECTIONSPEED);
 
-            // TensorFlow stuff goes here
 
-            ///////////////////////////////////
-
-            //robot.setDrivetrainPosition(robot.driveFrontLeft.getCurrentPosition()-40, "rotating", .3);
-
-            /* while((robot.driveFrontLeft.isBusy() || robot.driveFrontRight.isBusy()
-                    || robot.driveRearLeft.isBusy() || robot.driveRearRight.isBusy()) && !isStopRequested()){
-                telemetry.addData("Drivetrain front left", robot.driveFrontLeft.getCurrentPosition());
-                telemetry.addData("Drivetrain front right", robot.driveFrontRight.getCurrentPosition());
-                telemetry.addData("Drivetrain rear left", robot.driveRearLeft.getCurrentPosition());
-                telemetry.addData("Drivetrain rear right", robot.driveRearRight.getCurrentPosition());
-                telemetry.update();
-            } */
-
-
-            ///////////////////////////////////
-
-            // getUpdatedRecognitions() will return null if no new information is available since
-            // the last time that call was made.
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
 
 
             if(updatedRecognitions != null) {
+
+
                 for (Recognition recognition : updatedRecognitions) {
+
+                    mineralCounter = updatedRecognitions.size();
+
                     if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                        goldMineral = true;
-                        goldMineralXL = (int) recognition.getLeft();
-                        goldMineralXR = (int) recognition.getRight();
-                        telemetry.clear();
-                        telemetry.addData("Gold mineral", goldMineralXL);
+
+                        goldMineralX = (int) recognition.getLeft();
+                        telemetry.addData("Gold mineral", goldMineralX);
+
+                            goldMineral = true;
+                            for (int i = 1; i <= 3; i++) {
+                                if (extremecoordinatesMinerals[0][i] == 0) {
+                                    extremecoordinatesMinerals[2][i] = goldMineralX;
+                                    extremecoordinatesMinerals[1][i] = robot.modernRoboticsI2cGyro.getIntegratedZValue();
+                                    extremecoordinatesMinerals[0][i] = 2;
+                                    break;
+                                }
+                            }
+
+
+                    }
+
+                    if (recognition.getLabel().equals(LABEL_SILVER_MINERAL)) {
+
+                        k++;
+
+                        silverMineralX = (int) recognition.getLeft();
+
+
+                        if (previousmineralsRecognized == 0) {
+                            for (int i = 1; i <= 3; i++) {
+                                if (extremecoordinatesMinerals[0][i] == 0) {
+                                    extremecoordinatesMinerals[2][i] = (int) recognition.getLeft();
+                                    extremecoordinatesMinerals[1][i] = robot.modernRoboticsI2cGyro.getIntegratedZValue();
+                                    extremecoordinatesMinerals[0][i] = 1;
+                                    break;
+                                }
+                            }
+                            telemetry.addData("Silver mineral placed first", "wqm");
+                        } else {
+                            if (mineralCounter > 1 && k == 2) {
+                                for (int i = 1; i <= 3; i++) {
+                                    if (extremecoordinatesMinerals[0][i] == 0) {
+                                        extremecoordinatesMinerals[2][i] = (int) recognition.getLeft();
+                                        extremecoordinatesMinerals[1][i] = robot.modernRoboticsI2cGyro.getIntegratedZValue();
+                                        extremecoordinatesMinerals[0][i] = 1;
+                                        telemetry.addData("Added the second mineral", "seeing both");
+                                        break;
+                                    }
+                                }
+                            }
+
+//                            else if(Math.abs(silverMineralX - previoussilverMineralX) > 500 && k == 1){
+//                                for (int i = 1; i <= 3; i++) {
+//                                    if (mineralSequence[i] == 0) {
+//                                        mineralSequence[i] = 1;
+//                                        telemetry.addData("Added the second mineral", "through not seeing the first");
+//                                        break;
+//                                    }
+//                                }
+//                            }
+
+                        }
+
+
+
+
+                    }
+
+                    if(goldMineral){
+                        break;
                     }
                 }
             }
             else{
-                telemetry.clear();
-                telemetry.addData("Gyro Value", robot.modernRoboticsI2cGyro.getIntegratedZValue());
-                telemetry.addData("No", "Object");
-            }
-            telemetry.update();
+                }
 
+
+                if(k == 1){
+                    previoussilverMineralX = silverMineralX;
+                }
+
+
+            for(int i = 1; i <= 3; i++){
+                mineralsRecognized = mineralsRecognized + extremecoordinatesMinerals[0][i];
+            }
+            previousmineralsRecognized = mineralsRecognized;
+            telemetry.addData("mineralSum", mineralsRecognized);
+
+        }
+
+        for(int i = 1; i <= 3; i++){
+            extremecoordinatesMinerals[3][i] = robot.VutoDegrees(extremecoordinatesMinerals[2][i]) + Math.abs(extremecoordinatesMinerals[1][i]);
         }
 
         robot.mecanumMovement(0,0,0);
 
-        telemetry.addData("mineralposition", goldMineralXL);
-        telemetry.update();
+        telemetry.addData("P", extremecoordinatesMinerals[0][1] + " " + extremecoordinatesMinerals[0][2] +" " + extremecoordinatesMinerals[0][3]);
+        telemetry.addData("X", extremecoordinatesMinerals[1][1] + " " + extremecoordinatesMinerals[1][2] +" " + extremecoordinatesMinerals[1][3]);
+        telemetry.addData("Vu", extremecoordinatesMinerals[2][1] + " " + extremecoordinatesMinerals[2][2] +" " + extremecoordinatesMinerals[2][3]);
+        telemetry.addData("Pos", extremecoordinatesMinerals[3][1] + " " + extremecoordinatesMinerals[3][2] +" " + extremecoordinatesMinerals[3][3]);
 
-        sleep(1000);
-
-        while(goldMineral == true && !(goldMineralXL < 450 && goldMineralXL > 175) && !isStopRequested()) {
-            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-
-            if (updatedRecognitions != null) {
-                for (Recognition recognition : updatedRecognitions) {
-                    if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                        goldMineralXL = (int) recognition.getLeft();
-                    }
+        for(int i = 1; i <= 3; i++){
+            if(extremecoordinatesMinerals[3][i] <= 65){
+                if(mineralSequence[1] == 0) {
+                    mineralSequence[1] = extremecoordinatesMinerals[0][i];
+                }
+                else{
+                    mineralSequence[1] = extremecoordinatesMinerals[0][i];
                 }
             }
-
-            if(goldMineralXL > 700){
-                detectionDirection = 1;
+            else if(extremecoordinatesMinerals[3][i] > 65 && extremecoordinatesMinerals[3][i] < 95){
+                if(mineralSequence[2] == 0) {
+                    mineralSequence[2] = extremecoordinatesMinerals[0][i];
+                }
+                else{
+                    mineralSequence[2] = extremecoordinatesMinerals[0][i];
+                }
             }
-            else if(goldMineralXL < 560){
-                detectionDirection = -1;
+            else if(extremecoordinatesMinerals[3][i] >= 95){
+                if(mineralSequence[3] == 0) {
+                    mineralSequence[3] = extremecoordinatesMinerals[0][i];
+                }
+                else{
+                    mineralSequence[3] = extremecoordinatesMinerals[0][i];
+                }
             }
+        }
 
-            robot.mecanumMovement(0,0,DETECTIONSPEED * detectionDirection);
 
-            telemetry.addData("mineral", goldMineralXL);
-            telemetry.update();
+        for(int i = 1; i <= 3; i++){
+            if(mineralSequence[i] == 2 && goldMineral == true){
+                if(goldMineralPosition == -1) {
+                    goldMineralPosition = i;
+                }
+                break;
+            }
+            else if(goldMineral == false && mineralSequence[i] == 0){
+                if(goldMineralPosition == -1) {
+                    goldMineralPosition = i;
+                }
+                break;
+            }
+        }
+
+
+        telemetry.addData("Array2", mineralSequence[1] + " " + mineralSequence[2] +" " + mineralSequence[3]);
+        telemetry.addData("goldPos", goldMineralPosition);
+        telemetry.update();
+
+        switch (goldMineralPosition){
+            case 1:
+                robot.absgyroRotation(leftPosition, "absolute");
+                hittingMineralDistance = -3000;
+                break;
+
+            case 2:
+                robot.absgyroRotation(midPosition, "absolute");
+                hittingMineralDistance = -2500;
+                break;
+
+            case 3:
+                robot.absgyroRotation(rightPosition, "absolute");
+                hittingMineralDistance = -3000;
+                break;
+        }
+
+        robot.setDrivetrainPosition(-2500, "translation", .5);
+
+        while(opModeIsActive()){
 
         }
 
-        telemetry.clear();
-        telemetry.addLine("out of the while :)");
-        telemetry.addData("mineral position", goldMineralXL);
-        telemetry.update();
 
-        robot.setDrivetrainPosition(-2300, "translation", .3);
+        telemetry.addData("angle", robot.modernRoboticsI2cGyro.getIntegratedZValue());
 
-//        sleep(3000);
 
 
 
         //robot.setDrivetrainPosition(-1000, "translation", 0.5);
 
-        while(opModeIsActive()){
 
-        }
 
         int minxl=0;
         int minx2;
 
         if(goldMineral==true){
 
-            while (goldMineralXL<minxl) {
+            while (goldMineralX<minxl) {
                 robot.setDrivetrainPosition(robot.driveFrontLeft.getCurrentPosition()-40, "rotating", .3);
 
                 while((robot.driveFrontLeft.isBusy() || robot.driveFrontRight.isBusy()

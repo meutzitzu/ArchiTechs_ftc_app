@@ -247,26 +247,6 @@ public class TensorFlowTest extends LinearOpMode {
 
 
 
-        //Rotation of the main arm
-        if (gamepad1.dpad_up) {
-            robot.rotationMovement(true, brakeFactor);
-        } else if (gamepad1.dpad_down) {
-            robot.rotationMovement(false, brakeFactor);
-        } else {
-            if(robot.mechRotation.getCurrentPosition() <= robot.MIN_ROTATION + 10){
-                if(robot.mechRotation.getMode() != DcMotor.RunMode.RUN_TO_POSITION) {
-                    armPosition = robot.mechRotation.getCurrentPosition();
-                    robot.mechRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    robot.mechRotation.setTargetPosition(armPosition);
-                    robot.mechRotation.setPower(1);
-                }
-            }
-            else {
-                robot.mechRotation.setPower(0);
-            }
-        }
-
-
         //Grabber servo
         if (gamepad1.right_trigger != 0){
             if(gamepad1.right_bumper){

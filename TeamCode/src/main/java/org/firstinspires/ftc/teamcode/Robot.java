@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IntegratingGyroscope;
@@ -43,14 +44,14 @@ public class Robot {
     /** Global constants */
         public final double MAX_CRSERVO_INPUT = 0.82;  //max power that can be
         public final double LIFT_SPEED = 1;
-        public final double ROTATION_SPEED = 0.4;  //max angular velocity of the arm
+        public final double ROTATION_SPEED_MODIFIER = 0.4;  //max angular velocity of the arm
         public final double MIN_LIFT_POSITION = 0;
         public final int MAX_LIFT_POSITION = 22000;
         public final int MAX_ROTATION = 0;  //will probably be ignored; used only as reference for minimum position
         public final int MIN_ROTATION = -1800;  //useful
         public final int ROTATION_LENGTH = MAX_ROTATION - MIN_ROTATION; //
         public double PI = 3.14159;
-        public final double DRIVING_COEF = 0.6; //max speed is a little to much for our competent drivers
+        public final double DRIVING_COEF = 0.4; //max speed is a little to much for our competent drivers
         public final double MAX_EXT = 1700;
         public final double MIN_EXT = 0;
 
@@ -143,7 +144,7 @@ public class Robot {
         driveRearLeft.setDirection(DcMotor.Direction.REVERSE);
         driveRearRight.setDirection(DcMotor.Direction.FORWARD);
 
-        mechRotation.setDirection(DcMotor.Direction.FORWARD);
+        mechRotation.setDirection(DcMotor.Direction.REVERSE);
         mechLiftLeft.setDirection(DcMotor.Direction.FORWARD);
         mechLiftRight.setDirection(DcMotor.Direction.FORWARD);
         mechExt.setDirection(DcMotor.Direction.REVERSE);
@@ -269,9 +270,9 @@ public class Robot {
         /** "PID" for motor used for arm rotation
         *   waiting a full restructure           */
 
-        public void rotationMovement(boolean goingUp, double brakeFactor){
+        public void rotationMovementWIP(boolean goingUp, double brakeFactor){
 
-            double rotationSpeed = ROTATION_SPEED;
+            double rotationSpeed = 0.3;
             int theta = mechRotation.getCurrentPosition();
             int error;
             boolean up = true;
@@ -342,6 +343,17 @@ public class Robot {
                 telemetry.addData("Error", error);
 
         }
+
+
+        public void rotationMovement(double rotationSpeed){
+
+            if(mechRotation.getCurrentPosition() < 5){
+                rotationSpeed = 0;
+            }
+
+            mechRotation.setPower(rotationSpeed);
+        }
+
 
         //turns ticks into rads, almost
         public double tickToRad(int ticks){
@@ -452,11 +464,6 @@ public class Robot {
 
                 error = desiredTheta - currentTheta;
 
-                telemetry.addData("desired", desiredTheta);
-                telemetry.addData("actual", currentTheta);
-                telemetry.addData("error", error);
-                telemetry.addData("speed", outSpeed);
-                telemetry.update();
             }
 
             this.mecanumMovement(0,0,0);
@@ -485,6 +492,13 @@ public class Robot {
 
             return gyroOrientatedZValue;
 
+        }
+
+        public int VutoDegrees(int VuX){
+
+            double degrees = (25 / 540.0) * VuX - 25;
+
+            return (int) degrees;
         }
 
 
