@@ -224,9 +224,9 @@ public class Autonom extends LinearOpMode {
 
     private  void  initiateRecognition(){
 
-        int goldMineralX = -1;
+        int goldMineralX; //x coordinate of the
         int goldMineralPosition = -1; //can be 1, 2, 3
-        int silverMineralX = -1, previoussilverMineralX = -1;
+        int silverMineralX = -1;
         int[] mineralSequence = new int[] {0,0,0,0}; // 2->gold mineral
                                // 1->silver mineral
         int [][] extremecoordinatesMinerals = new int[][] {{0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}};
@@ -248,76 +248,7 @@ public class Autonom extends LinearOpMode {
         if (tfod != null) {
             tfod.activate();
         }
-//
-//        while(!goldMineral && tfod != null && !isStopRequested() && mineralRetrievalTimer.seconds() <= MAXDETECTIONTIME) {
-//
-//            if(robot.modernRoboticsI2cGyro.getIntegratedZValue() < -125 && detectionDirection == 1){
-//                detectionDirection = -1;
-//            }
-//            else if(robot.modernRoboticsI2cGyro.getIntegratedZValue() > -45 && detectionDirection == -1){
-//                detectionDirection = 1;
-//            }
-//            robot.mecanumMovement(0,0,detectionDirection * DETECTIONSPEED);
-//
-//            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-//
-//
-//            if(updatedRecognitions != null) {
-//                for (Recognition recognition : updatedRecognitions) {
-//                    if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-//                        goldMineral = true;
-//                        goldMineralX = (int) recognition.getLeft();
-//                        goldMineralXR = (int) recognition.getRight();
-//                        telemetry.clear();
-//                        telemetry.addData("Gold mineral", goldMineralX);
-//                    }
-//                }
-//            }
-//            else{
-//                telemetry.clear();
-//                telemetry.addData("Gyro Value", robot.modernRoboticsI2cGyro.getIntegratedZValue());
-//                telemetry.addData("No", "Object");
-//            }
-//            telemetry.update();
-//
-//        }
-//
-//        robot.mecanumMovement(0,0,0);
-//
-//        telemetry.addData("mineralposition", goldMineralX);
-//        telemetry.update();
-//
-//        sleep(1000);
-//
-//        while(goldMineral == true && !(goldMineralX < 450 && goldMineralX > 175) && !isStopRequested()) {
-//            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-//
-//            if (updatedRecognitions != null) {
-//                for (Recognition recognition : updatedRecognitions) {
-//                    if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-//                        goldMineralX = (int) recognition.getLeft();
-//                    }
-//                }
-//            }
-//
-//            if(goldMineralX > 700){
-//                detectionDirection = 1;
-//            }
-//            else if(goldMineralX < 560){
-//                detectionDirection = -1;
-//            }
-//
-//            robot.mecanumMovement(0,0,DETECTIONSPEED * detectionDirection);
-//
-//            telemetry.addData("mineral", goldMineralX);
-//            telemetry.update();
-//
-//        }
-//
-//        telemetry.clear();
-//        telemetry.addLine("out of the while :)");
-//        telemetry.addData("mineral position", goldMineralX);
-//        telemetry.update();
+
 
 
         while(tfod != null && mineralsRecognized < 2 && !isStopRequested()){
@@ -393,15 +324,6 @@ public class Autonom extends LinearOpMode {
                                 }
                             }
 
-//                            else if(Math.abs(silverMineralX - previoussilverMineralX) > 500 && k == 1){
-//                                for (int i = 1; i <= 3; i++) {
-//                                    if (mineralSequence[i] == 0) {
-//                                        mineralSequence[i] = 1;
-//                                        telemetry.addData("Added the second mineral", "through not seeing the first");
-//                                        break;
-//                                    }
-//                                }
-//                            }
 
                         }
 
@@ -417,11 +339,7 @@ public class Autonom extends LinearOpMode {
             }
             else{
                 }
-
-
-                if(k == 1){
-                    previoussilverMineralX = silverMineralX;
-                }
+                
 
 
             for(int i = 1; i <= 3; i++){
@@ -508,39 +426,14 @@ public class Autonom extends LinearOpMode {
 
         robot.setDrivetrainPosition(hittingMineralDistance, "translation", .5);
 
-        while(opModeIsActive()){
 
-        }
 
 
         telemetry.addData("angle", robot.modernRoboticsI2cGyro.getIntegratedZValue());
+            while(opModeIsActive()){
 
+        }
 
-
-
-        //robot.setDrivetrainPosition(-1000, "translation", 0.5);
-
-
-
-        int minxl=0;
-        int minx2;
-
-        if(goldMineral==true){
-
-            while (goldMineralX<minxl) {
-                robot.setDrivetrainPosition(robot.driveFrontLeft.getCurrentPosition()-40, "rotating", .3);
-
-                while((robot.driveFrontLeft.isBusy() || robot.driveFrontRight.isBusy()
-                        || robot.driveRearLeft.isBusy() || robot.driveRearRight.isBusy()) && !isStopRequested()){
-                    telemetry.addData("Drivetrain front left", robot.driveFrontLeft.getCurrentPosition());
-                    telemetry.addData("Drivetrain front right", robot.driveFrontRight.getCurrentPosition());
-                    telemetry.addData("Drivetrain rear left", robot.driveRearLeft.getCurrentPosition());
-                    telemetry.addData("Drivetrain rear right", robot.driveRearRight.getCurrentPosition());
-                    telemetry.update();
-                }
-
-            }
-            }
 
         }
 
