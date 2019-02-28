@@ -235,6 +235,7 @@ public class TeleOpMode extends LinearOpMode {
             telemetry.addData("Lift ext", robot.mechExt.getCurrentPosition());
             telemetry.addData("Gyro pos", robot.modernRoboticsI2cGyro.getIntegratedZValue());
             telemetry.addData("Distance from sensor: ", robot.distanceSensor.getDistance(DistanceUnit.CM));
+            telemetry.addData("Lateral distance", robot.lateralDistanceSensor.getDistance(DistanceUnit.CM));
             telemetry.update();
 
         }

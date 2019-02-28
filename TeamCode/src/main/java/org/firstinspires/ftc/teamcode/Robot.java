@@ -36,6 +36,7 @@ public class Robot {
         IntegratingGyroscope gyro;
         ModernRoboticsI2cGyro modernRoboticsI2cGyro;
         public DistanceSensor distanceSensor;
+        public DistanceSensor lateralDistanceSensor;
         public Telemetry telemetry;
         public LinearOpMode opMode;
 
@@ -51,7 +52,7 @@ public class Robot {
         public final int MIN_ROTATION = -1800;  //useful
         public final int ROTATION_LENGTH = MAX_ROTATION - MIN_ROTATION; //
         public double PI = 3.14159;
-        public final double DRIVING_COEF = 0.4; //max speed is a little to much for our competent drivers
+        public final double DRIVING_COEF = 0.7; //max speed is a little to much for our competent drivers
         public final double MAX_EXT = 1700;
         public final double MIN_EXT = 0;
 
@@ -73,6 +74,7 @@ public class Robot {
         mechExt = hashMap.get(DcMotor.class, "mechExt");
         mechGrab = hashMap.get(CRServo.class, "mechGrab");
         distanceSensor = hashMap.get(DistanceSensor.class, "distanceSensor");
+        lateralDistanceSensor = hashMap.get(DistanceSensor.class, "lateralDistanceSensor");
         modernRoboticsI2cGyro = hashMap.get(ModernRoboticsI2cGyro .class, "gyro");
         gyro = (IntegratingGyroscope)modernRoboticsI2cGyro;
         telemetry = tele;
@@ -445,14 +447,14 @@ public class Robot {
             error = desiredTheta - initialTheta;
 
             while(abs(error) > 0.05 && !opMode.isStopRequested()){
-                outSpeed = 0.6 * sin((Math.PI / (desiredTheta - initialTheta)) * error) + 0.08;
+                outSpeed = 0.8 * sin((Math.PI / (desiredTheta - initialTheta)) * error) + 0.1;
 
                 if(CCW){
                     outSpeed = -outSpeed;
                 }
 
-                if(abs(outSpeed) > 0.6){
-                    outSpeed = 0.6 * (outSpeed / abs(outSpeed));
+                if(abs(outSpeed) > 0.8){
+                    outSpeed = 0.8 * (outSpeed / abs(outSpeed));
                 }
 
                 this.mecanumMovement(0,0, outSpeed);
