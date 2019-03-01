@@ -210,13 +210,13 @@ public class TensorFlowTest extends LinearOpMode {
 
         //Lift motors
         if(gamepad1.b){
-            robot.liftMovement(robot.useBrake(robot.LIFT_SPEED, brakeFactor, false));
+            robot.liftMovement(robot.useBrake(robot.LIFT_SPEED, brakeFactor, false), true);
         }
         else if(gamepad1.a){
-            robot.liftMovement(robot.useBrake(-robot.LIFT_SPEED, brakeFactor, false));
+            robot.liftMovement(robot.useBrake(-robot.LIFT_SPEED, brakeFactor, false), true);
         }
         else if(!gamepad1.a && !gamepad1.b && !gamepad2.a && !gamepad2.b && !gamepad2.x && !gamepad2.y){
-            robot.liftMovement(0);
+            robot.liftMovement(0, true);
         }
 
         //adjusting lift motors if needed -> 2nd controller

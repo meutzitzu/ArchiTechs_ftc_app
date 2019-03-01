@@ -47,11 +47,11 @@ public class Robot {
     /** Global constants */
         public final double MAX_CRSERVO_INPUT = 0.82;  //max power that can be
         public final double LIFT_SPEED = 1;
-        public final double ROTATION_SPEED_MODIFIER = 0.3;  //max angular velocity of the arm
+        public final double ROTATION_SPEED_MODIFIER = 0.2;  //max angular velocity of the arm
         public final double MIN_LIFT_POSITION = 0;
         public final int MAX_LIFT_POSITION = 22000;
-        public final int MAX_ROTATION = 0;  //will probably be ignored; used only as reference for minimum position
-        public final int MIN_ROTATION = -1800;  //useful
+        public final int MAX_ROTATION = 2300;  //will probably be ignored; used only as reference for minimum position
+        public final int MIN_ROTATION = 0;  //useful
         public final int ROTATION_LENGTH = MAX_ROTATION - MIN_ROTATION; //
         public double PI = 3.14159;
         public final double DRIVING_COEF = 0.7; //max speed is a little to much for our competent drivers
@@ -163,7 +163,7 @@ public class Robot {
         mechRotation.setDirection(DcMotor.Direction.REVERSE);
         mechLiftLeft.setDirection(DcMotor.Direction.FORWARD);
         mechLiftRight.setDirection(DcMotor.Direction.FORWARD);
-        mechExt.setDirection(DcMotor.Direction.REVERSE);
+        mechExt.setDirection(DcMotor.Direction.FORWARD);
 
         mechStopper.setDirection(Servo.Direction.FORWARD);
         mechGrab.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -267,20 +267,21 @@ public class Robot {
 
         /** Motors used for lifting the robot */
 
-        public void liftMovement(double liftPower){
+        public void liftMovement(double liftPower, boolean nuAutonom){
             liftPower = Range.clip(liftPower, -1, 1) ;
 
 
-            //Lowering safety
-            if(((mechLiftLeft.getCurrentPosition() > MAX_LIFT_POSITION) || (mechLiftRight.getCurrentPosition() > MAX_LIFT_POSITION))&& liftPower > 0){
-                liftPower = 0;
-            }
+            if(!nuAutonom) {
+                //Lowering safety
+                if (((mechLiftLeft.getCurrentPosition() > MAX_LIFT_POSITION) || (mechLiftRight.getCurrentPosition() > MAX_LIFT_POSITION)) && liftPower > 0) {
+                    liftPower = 0;
+                }
 
-            //Raising safety
-            if((mechLiftLeft.getCurrentPosition() < MIN_LIFT_POSITION + 5 || mechLiftRight.getCurrentPosition() < MIN_LIFT_POSITION + 5)  && liftPower < 0){
-                liftPower = 0;
+                //Raising safety
+                if ((mechLiftLeft.getCurrentPosition() < MIN_LIFT_POSITION + 5 || mechLiftRight.getCurrentPosition() < MIN_LIFT_POSITION + 5) && liftPower < 0) {
+                    liftPower = 0;
+                }
             }
-
 
             mechLiftLeft.setPower(liftPower);
             mechLiftRight.setPower(liftPower);
@@ -372,7 +373,6 @@ public class Robot {
         public void rotationMovement(double rotationSpeed){
 
 
-
             if(rotationSpeed == 0){
 
                 timeVariable = rampingDownTime.milliseconds();
@@ -396,15 +396,24 @@ public class Robot {
             }
 
 
-            if(mechRotation.getCurrentPosition() < 5){
+            if(mechRotation.getCurrentPosition() > MAX_ROTATION - 5 && rotationSpeed > 0){
                 rotationSpeed = 0;
             }
 
-            if(rotationSpeed == 0){
-                rampingDown = false;
+            if(rotationSpeed == 0 && mechRotation.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
+                mechRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                mechRotation.setTargetPosition(mechRotation.getCurrentPosition());
+                mechRotation.setPower(0.4);
+            }
+            else if (mechRotation.getMode() == DcMotor.RunMode.RUN_TO_POSITION && rotationSpeed == 0){
+                //nimic aici
+            }
+            else{
+                mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                mechRotation.setPower(rotationSpeed);
             }
 
-            mechRotation.setPower(rotationSpeed);
+
         }
 
 

@@ -23,6 +23,8 @@ public class Autonom2 extends LinearOpMode {
     private static final double MAXDETECTIONTIME = 100;
     public int detectionDirection = 1;
 
+    int goldMineralPosition = -1; //can be 1, 2, 3
+
     private static final String VUFORIA_KEY = "AWcgpa7/////AAABmcy/3X8/j0O5rVl/TFsI7jtI2X65iRJuPT0JA+JxFlcGoXjuri+AHgItnHFgUGE5xkMhjhPpZ57eT9HxlpFmryfrXSxOYlX58SyvvCbZo+ftIlY4+x3iNw03eNywXKmPBdM7jmGEk6G1HViitwJy8CrOooxYAl37Vh7w0BZipSRVSDKg0AA+jj7ExvVYPedxSBlkTpR9VyUe7hNfWlK/ijmNcpmiYVYomUbPmef2TqIkxSYvBJKZF7vblCmtlmiSrmY1zyO7Y9xKk46vQ8x7cL8tTZG0zDzfDEC12KbCAJLqSN0qju6Z1gsTAIEJmwvAG0YAfKvZf7oSwtno0t7ZfhfY/2LUws3ydkJUVyZGOB7k";
 
     private VuforiaLocalizer vuforia;
@@ -30,7 +32,7 @@ public class Autonom2 extends LinearOpMode {
     private int initialLiftPosition;
 
     boolean goldMineral = false;
-    private int mineralPosition = 0;
+
 
     Robot robot = new Robot();
     ElapsedTime runtime = new ElapsedTime();
@@ -40,11 +42,14 @@ public class Autonom2 extends LinearOpMode {
         robot.init(hardwareMap, false, telemetry, this);
         initStuff();
 
-        if(robot.mechLiftRight.getCurrentPosition() == 0){
-            telemetry.addLine("Lift already up \n Robot won't proceed any further");
-            telemetry.update();
+        robot.mechLiftRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.mechLiftLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        }
+        robot.mechLiftRight.setPower(0);
+        robot.mechLiftRight.setPower(0);
+
+        robot.mechLiftRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.mechLiftLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 
         telemetry.update();
@@ -68,15 +73,16 @@ public class Autonom2 extends LinearOpMode {
     }
 
     private void deployRobot() {
-        while(robot.mechLiftLeft.getCurrentPosition() < robot.MAX_LIFT_POSITION && !isStopRequested()){
-            robot.liftMovement(robot.LIFT_SPEED);
+        while(robot.mechLiftLeft.getCurrentPosition() < robot.MAX_LIFT_POSITION &&
+                robot.mechLiftRight.getCurrentPosition() < robot.MAX_LIFT_POSITION && !isStopRequested()){
+            robot.liftMovement(robot.LIFT_SPEED, false);
             if(robot.mechLiftRight.getCurrentPosition() > robot.MAX_LIFT_POSITION)
                 break;
             telemetry.addData("Lift position", robot.mechLiftLeft.getCurrentPosition());
             telemetry.update();
         }
 
-        robot.liftMovement(0);
+        robot.liftMovement(0, false);
         telemetry.clear();
 
         robot.setDrivetrainMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -111,7 +117,7 @@ public class Autonom2 extends LinearOpMode {
     private  void  initiateRecognition(){
 
         int goldMineralX; //x coordinate of the
-        int goldMineralPosition = -1; //can be 1, 2, 3
+
         int silverMineralX = -1;
         int[] mineralSequence = new int[] {0,0,0,0}; // 2->gold mineral
         // 1->silver mineral
@@ -173,7 +179,8 @@ public class Autonom2 extends LinearOpMode {
                                 extremecoordinatesMinerals[2][i] = goldMineralX;
                                 extremecoordinatesMinerals[1][i] = robot.modernRoboticsI2cGyro.getIntegratedZValue();
                                 extremecoordinatesMinerals[0][i] = 2;
-                                mineralPosition = i;
+
+
 
                                 break;
                             }
@@ -328,6 +335,9 @@ public class Autonom2 extends LinearOpMode {
         robot.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
         initialLiftPosition = robot.mechLiftLeft.getCurrentPosition();
 
+        robot.mechRotation.setTargetPosition(130);
+        robot.mechRotation.setPower(0.8);
+
         initVuforia();
 
         if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
@@ -340,8 +350,8 @@ public class Autonom2 extends LinearOpMode {
 
     private void moveToEnd() {
 
+            telemetry.addLine("mineral position: " + goldMineralPosition);
             while(robot.distanceSensor.getDistance(DistanceUnit.CM) > 20){
-
                 if(robot.distanceSensor.getDistance(DistanceUnit.CM) < 40)
                     robot.mecanumMovement(0, .3, 0);
                 else
@@ -350,29 +360,57 @@ public class Autonom2 extends LinearOpMode {
                 // place toy
             }
             robot.mecanumMovement(0, 0, 0);
-
+            telemetry.update();
             alignWithWallAndPlaceToy();
+            goToCrater();
 
+    }
+
+    private void goToCrater() {
+        robot.setDrivetrainMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.mecanumMovement(0, 0, 0);
+        robot.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        robot.mecanumMovement(0, -1, 0);
+        while(robot.distanceSensor.getDistance(DistanceUnit.CM) < 170){
+            robot.mecanumMovement(0, -1, 0);
+        }
+        robot.mecanumMovement(0, 0, 0);
     }
 
     private void alignWithWallAndPlaceToy() {
 
-         if (mineralPosition == 1){
-            robot.absgyroRotation(45, "absolute");
-        } else if(mineralPosition == 3) {
-            robot.absgyroRotation(135, "absolute");
+         if (goldMineralPosition == 1){
+            robot.absgyroRotation(-135, "absolute");
+        } else if(goldMineralPosition == 3) {
+            robot.absgyroRotation(-45, "absolute");
         }
+        if(goldMineralPosition == 2){
+            robot.setDrivetrainPosition(-200, "translation", .8);
+        } else
+            while(robot.distanceSensor.getDistance(DistanceUnit.CM) > 40){
+                robot.mecanumMovement(0, .5, 0);
+            }
 
-        while(robot.distanceSensor.getDistance(DistanceUnit.CM) > 40){
-            robot.mecanumMovement(0, .5, 0);
-        }
         robot.mecanumMovement(0, 0, 0);
 
         placeToy();
+
+        while(robot.distanceSensor.getDistance(DistanceUnit.CM) > 15 && goldMineralPosition == 3)
+            robot.mecanumMovement(0, .5, 0);
+        robot.mecanumMovement(0, 0, 0);
+
+        robot.absgyroRotation(-135, "absolute");
     }
 
     private void placeToy() {
-
+        runtime.reset();
+        robot.mechGrab.setPower(.8);
+        while(runtime.seconds() < 1){
+            telemetry.addLine("waiting for the toy");
+        }
+        robot.mechGrab.setPower(0);
+        telemetry.update();
     }
 
     private void initVuforia() {

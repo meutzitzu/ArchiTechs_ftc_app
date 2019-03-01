@@ -42,11 +42,15 @@ public class Autonom extends LinearOpMode {
         robot.init(hardwareMap, false, telemetry, this);
         initStuff();
 
-        if(robot.mechLiftRight.getCurrentPosition() == 0){
-            telemetry.addLine("Lift already up \n Robot won't proceed any further");
-            telemetry.update();
+        robot.mechLiftRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.mechLiftLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        }
+        robot.mechLiftRight.setPower(0);
+        robot.mechLiftRight.setPower(0);
+
+        robot.mechLiftRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.mechLiftLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
 
         telemetry.update();
 
@@ -446,15 +450,16 @@ public class Autonom extends LinearOpMode {
 
 
     private void deployRobot() {
-        while(robot.mechLiftLeft.getCurrentPosition() < robot.MAX_LIFT_POSITION && !isStopRequested()){
-            robot.liftMovement(robot.LIFT_SPEED);
+        while(robot.mechLiftLeft.getCurrentPosition() < robot.MAX_LIFT_POSITION &&
+                robot.mechLiftRight.getCurrentPosition() < robot.MAX_LIFT_POSITION && !isStopRequested()){
+            robot.liftMovement(robot.LIFT_SPEED, false);
             if(robot.mechLiftRight.getCurrentPosition() > robot.MAX_LIFT_POSITION)
                 break;
             telemetry.addData("Lift position", robot.mechLiftLeft.getCurrentPosition());
             telemetry.update();
         }
 
-        robot.liftMovement(0);
+        robot.liftMovement(0, false);
         telemetry.clear();
 
         robot.setDrivetrainMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -492,6 +497,8 @@ public class Autonom extends LinearOpMode {
         robot.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
         initialLiftPosition = robot.mechLiftLeft.getCurrentPosition();
 
+        robot.mechRotation.setTargetPosition(130);
+        robot.mechRotation.setPower(0.8);
         initVuforia();
 
         if (ClassFactory.getInstance().canCreateTFObjectDetector()) {

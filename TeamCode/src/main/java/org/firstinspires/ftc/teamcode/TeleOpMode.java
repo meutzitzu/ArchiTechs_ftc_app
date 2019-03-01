@@ -27,7 +27,7 @@ public class TeleOpMode extends LinearOpMode {
     int grabDirection = 1;
     int extensionGrabber = 0; // 1 -> extending, 0 -> idle, -1 -> retracting
     String drivingMode = "Local";
-    boolean rotationAdjust = true;
+    boolean rotationAdjust = false;
     boolean grabberMoving = false;
     boolean stopperOpen = false;
 
@@ -109,13 +109,13 @@ public class TeleOpMode extends LinearOpMode {
                 mechExtSpeed = 0;
             }
             else if(extensionGrabber == 1) {
-                mechExtSpeed = 0.60;
+                mechExtSpeed = 0.30;
                 if(robot.mechExt.getCurrentPosition() > robot.MAX_EXT - 10){
                     mechExtSpeed = 0;
                 }
             }
             else if(extensionGrabber == -1) {
-                mechExtSpeed = -0.60;
+                mechExtSpeed = -0.30;
                 if(robot.mechExt.getCurrentPosition() < robot.MIN_EXT + 10){
                     mechExtSpeed = 0;
                 }
@@ -135,18 +135,18 @@ public class TeleOpMode extends LinearOpMode {
             //Lift motors
 
             if(gamepad1.b){
-                robot.liftMovement(robot.useBrake(robot.LIFT_SPEED, brakeFactor, false));
+                robot.liftMovement(robot.useBrake(robot.LIFT_SPEED, brakeFactor, false), true);
             }
             else if(gamepad1.a){
-                robot.liftMovement(robot.useBrake(-robot.LIFT_SPEED, brakeFactor, false));
+                robot.liftMovement(robot.useBrake(-robot.LIFT_SPEED, brakeFactor, false), true);
             }
             else if(!gamepad1.a && !gamepad1.b && !gamepad2.a && !gamepad2.b && !gamepad2.x && !gamepad2.y){
-                robot.liftMovement(0);
+                robot.liftMovement(0, true);
             }
 
 
                 //adjusting lift motors if needed -> 2nd controller
-
+//
             else if(gamepad2.b){
                 robot.mechLiftRight.setPower(1);
             }
@@ -166,7 +166,7 @@ public class TeleOpMode extends LinearOpMode {
             //patching for arm movement
 
 
-            if(gamepad2.right_bumper){
+            if(gamepad1.dpad_up){
                 robot.mechLiftRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 robot.mechLiftLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
@@ -200,20 +200,24 @@ public class TeleOpMode extends LinearOpMode {
 
             //rotation movement
 
-            if(gamepad2.left_trigger > 0.5){
-                rotationAdjust = !rotationAdjust;
-                if(rotationAdjust){
-                    robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    robot.mechRotation.setPower(0);
-                    robot.mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                }
-            }
+//            if(gamepad2.left_trigger > 0.5){
+//                rotationAdjust = !rotationAdjust;
+//                if(rotationAdjust){
+//                    robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                    robot.mechRotation.setPower(0);
+//                    robot.mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//                }
+//            }
 
             if(rotationAdjust){
                 robot.mechRotation.setPower(rotationspeed * robot.ROTATION_SPEED_MODIFIER);
             }
             else {
                 robot.rotationMovement(rotationspeed * robot.ROTATION_SPEED_MODIFIER);
+            }
+
+            if(gamepad1.dpad_down && robot.mechRotation.getMode() == DcMotor.RunMode.RUN_TO_POSITION){
+                robot.mechRotation.setTargetPosition(robot.mechExt.getCurrentPosition() + 10);
             }
 
 
@@ -227,6 +231,7 @@ public class TeleOpMode extends LinearOpMode {
                 robot.mechGrab.setPower(0);
                 grabberMoving = false;
             }
+            telemetry.addData("mechGRab", robot.mechGrab.getPower());
 
 
             //stopper servo
@@ -246,9 +251,9 @@ public class TeleOpMode extends LinearOpMode {
 
             telemetry.addData("Arm adjust", rotationAdjust);
             telemetry.addData("controller", rotationspeed);
-            telemetry.addData("arm speed", robot.mechRotation.getPower());
-            telemetry.addData("grabber vaue", grabberMoving);
-            telemetry.addData("stopper", robot.mechStopper.getPosition());
+            telemetry.addData("Driving", robot.driveFrontLeft.getCurrentPosition());
+            telemetry.addData("arm pos", robot.mechRotation.getCurrentPosition());
+            telemetry.addData("arm mode", robot.mechRotation.getMode());
             telemetry.update();
 
         }
