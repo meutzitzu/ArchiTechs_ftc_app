@@ -86,7 +86,7 @@ public class Autonom2 extends LinearOpMode {
         telemetry.clear();
 
         robot.setDrivetrainMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.setDrivetrainPosition(-300, "translation", .3);
+        robot.setDrivetrainPosition(-300, "translation", .6);
         while(robot.driveFrontLeft.isBusy() && robot.driveFrontRight.isBusy()
                 && robot.driveRearLeft.isBusy() && robot.driveRearRight.isBusy() && !isStopRequested()){
             telemetry.addLine("Going back");
@@ -103,7 +103,7 @@ public class Autonom2 extends LinearOpMode {
             telemetry.update();
         }
 
-        robot.setDrivetrainPosition(300, "translation", .3);
+        robot.setDrivetrainPosition(300, "translation", .6);
         while(robot.driveFrontLeft.isBusy() && robot.driveFrontRight.isBusy()
                 && robot.driveRearLeft.isBusy() && robot.driveRearRight.isBusy() && !isStopRequested()){
             telemetry.addLine("Going forward");
@@ -410,6 +410,7 @@ public class Autonom2 extends LinearOpMode {
             telemetry.addLine("waiting for the toy");
         }
         robot.mechGrab.setPower(0);
+
         telemetry.update();
     }
 

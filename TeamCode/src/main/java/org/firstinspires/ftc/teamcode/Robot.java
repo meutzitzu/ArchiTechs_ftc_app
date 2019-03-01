@@ -18,6 +18,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.cos;
+import static java.lang.Math.max;
 import static java.lang.Math.sin;
 import static java.lang.Thread.sleep;
 
@@ -370,8 +371,13 @@ public class Robot {
         ElapsedTime rampingDownTime = new ElapsedTime();
         double timeVariable;
 
-        public void rotationMovement(double rotationSpeed){
+        public void rotationMovement(double rotationSpeed, int newMaxRotation){
 
+            int maxRotation = MAX_ROTATION;
+
+            if(newMaxRotation != -420){
+                maxRotation = newMaxRotation;
+            }
 
             if(rotationSpeed == 0){
 
@@ -396,7 +402,7 @@ public class Robot {
             }
 
 
-            if(mechRotation.getCurrentPosition() > MAX_ROTATION - 5 && rotationSpeed > 0){
+            if(mechRotation.getCurrentPosition() > maxRotation - 5 && rotationSpeed > 0){
                 rotationSpeed = 0;
             }
 
