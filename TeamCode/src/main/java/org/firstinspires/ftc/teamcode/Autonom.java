@@ -30,6 +30,7 @@ public class Autonom extends LinearOpMode {
     private TFObjectDetector tfod;
 
     boolean goldMineral = false;
+    boolean samplingFailure = false;
 
     Robot robot = new Robot();
     ElapsedTime runtime = new ElapsedTime();
@@ -47,24 +48,23 @@ public class Autonom extends LinearOpMode {
 
         }
 
-
         telemetry.update();
 
         waitForStart();
 
         runtime.reset();
 
-
         deployRobot();
-
         telemetry.clear();
         telemetry.addData("Deploy", "Over");
         telemetry.update();
 
 
         mineralRetrievalTimer.reset();
-
         initiateRecognition();
+        telemetry.clear();
+        telemetry.addData("Hitting mineral", "Over");
+
 
         moveToEnd();
 
@@ -182,6 +182,7 @@ public class Autonom extends LinearOpMode {
 
         while(currentDistanceToObject > 40 && !isStopRequested()){
             double newDistanceDetected = robot.distanceSensor.getDistance(DistanceUnit.CM);
+
             telemetry.addData("distance to back wall", newDistanceDetected);
 //            if(currentDistanceToObject - newDistanceDetected > 20){
 //                robot.mecanumMovement(0, 0, 0);
@@ -234,12 +235,13 @@ public class Autonom extends LinearOpMode {
         int goldMineralPosition = -1; //can be 1, 2, 3
         int silverMineralX = -1;
         int[] mineralSequence = new int[] {0,0,0,0}; // 2->gold mineral
-                               // 1->silver mineral
+                                                     // 1->silver mineral
         int [][] extremecoordinatesMinerals = new int[][] {{0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}};
         int mineralsRecognized = 0; // sum of the first 3 elements of the array
         int mineralCounter, previousmineralsRecognized = 0;
 
         int leftPosition = -50, midPosition = -82, rightPosition = -120;
+
 
         int hittingMineralDistance = 0;
 
@@ -257,7 +259,7 @@ public class Autonom extends LinearOpMode {
 
 
 
-        while(tfod != null && mineralsRecognized < 2 && !isStopRequested()){
+        while(tfod != null && mineralsRecognized < 2 && !isStopRequested() && mineralRetrievalTimer.seconds() < 10){
 
             k = 0;
 
@@ -310,7 +312,7 @@ public class Autonom extends LinearOpMode {
                         if (previousmineralsRecognized == 0) {
                             for (int i = 1; i <= 3; i++) {
                                 if (extremecoordinatesMinerals[0][i] == 0) {
-                                    extremecoordinatesMinerals[2][i] = (int) recognition.getLeft();
+                                    extremecoordinatesMinerals[2][i] = silverMineralX;
                                     extremecoordinatesMinerals[1][i] = robot.modernRoboticsI2cGyro.getIntegratedZValue();
                                     extremecoordinatesMinerals[0][i] = 1;
                                     break;
@@ -321,7 +323,7 @@ public class Autonom extends LinearOpMode {
                             if (mineralCounter > 1 && k == 2) {
                                 for (int i = 1; i <= 3; i++) {
                                     if (extremecoordinatesMinerals[0][i] == 0) {
-                                        extremecoordinatesMinerals[2][i] = (int) recognition.getLeft();
+                                        extremecoordinatesMinerals[2][i] = silverMineralX;
                                         extremecoordinatesMinerals[1][i] = robot.modernRoboticsI2cGyro.getIntegratedZValue();
                                         extremecoordinatesMinerals[0][i] = 1;
                                         telemetry.addData("Added the second mineral", "seeing both");
@@ -343,8 +345,6 @@ public class Autonom extends LinearOpMode {
                     }
                 }
             }
-            else{
-                }
 
 
 
@@ -353,6 +353,10 @@ public class Autonom extends LinearOpMode {
             }
             previousmineralsRecognized = mineralsRecognized;
             telemetry.addData("mineralSum", mineralsRecognized);
+
+            if(mineralRetrievalTimer.seconds() >= 10){
+                samplingFailure = true;
+            }
 
         }
 
@@ -438,7 +442,7 @@ public class Autonom extends LinearOpMode {
         }
 
 
-        }
+    }
 
 
     private void deployRobot() {

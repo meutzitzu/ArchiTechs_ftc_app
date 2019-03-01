@@ -10,6 +10,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IntegratingGyroscope;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -31,7 +33,7 @@ public class Robot {
         public DcMotor mechExt = null;
         public DcMotor mechLiftLeft = null;
         public DcMotor mechLiftRight = null;
-        //public CRServo mechExt = null;  //extension of arm
+        public Servo mechStopper = null;
         public CRServo mechGrab = null;  //servo used on the grabber
         IntegratingGyroscope gyro;
         ModernRoboticsI2cGyro modernRoboticsI2cGyro;
@@ -45,7 +47,7 @@ public class Robot {
     /** Global constants */
         public final double MAX_CRSERVO_INPUT = 0.82;  //max power that can be
         public final double LIFT_SPEED = 1;
-        public final double ROTATION_SPEED_MODIFIER = 0.4;  //max angular velocity of the arm
+        public final double ROTATION_SPEED_MODIFIER = 0.3;  //max angular velocity of the arm
         public final double MIN_LIFT_POSITION = 0;
         public final int MAX_LIFT_POSITION = 22000;
         public final int MAX_ROTATION = 0;  //will probably be ignored; used only as reference for minimum position
@@ -55,6 +57,11 @@ public class Robot {
         public final double DRIVING_COEF = 0.7; //max speed is a little to much for our competent drivers
         public final double MAX_EXT = 1700;
         public final double MIN_EXT = 0;
+        public final double STOPPER_OPEN = 0;
+        public final double STOPPER_CLOSED = 90;
+        public final double GRABBING_SPEED = 0.82;
+        public final double RAMPING_DOWN_TIME = 300; //milliseconds
+
 
 
     /** Auxiliary variables */
@@ -73,6 +80,7 @@ public class Robot {
         mechLiftRight = hashMap.get(DcMotor.class, "mechLiftRight");
         mechExt = hashMap.get(DcMotor.class, "mechExt");
         mechGrab = hashMap.get(CRServo.class, "mechGrab");
+        mechStopper = hashMap.get(Servo.class, "mechStopper");
         distanceSensor = hashMap.get(DistanceSensor.class, "distanceSensor");
         lateralDistanceSensor = hashMap.get(DistanceSensor.class, "lateralDistanceSensor");
         modernRoboticsI2cGyro = hashMap.get(ModernRoboticsI2cGyro .class, "gyro");
@@ -107,6 +115,10 @@ public class Robot {
         mechExt.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         mechExt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+
+
+
+
         if(!teleOp) {
 
             this.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -134,6 +146,8 @@ public class Robot {
         }
 
 
+        mechGrab.setPower(0);
+
 
         /** Setting direction of hardware components
          *  --poate unele trebuie doar la TeleOp si nu la Autonom
@@ -150,6 +164,9 @@ public class Robot {
         mechLiftLeft.setDirection(DcMotor.Direction.FORWARD);
         mechLiftRight.setDirection(DcMotor.Direction.FORWARD);
         mechExt.setDirection(DcMotor.Direction.REVERSE);
+
+        mechStopper.setDirection(Servo.Direction.FORWARD);
+        mechGrab.setDirection(DcMotorSimple.Direction.FORWARD);
 
 
     }
@@ -346,11 +363,45 @@ public class Robot {
 
         }
 
+        double alpha = 0;
+        boolean rampingDown = false;
+        double beaconMotorSpeed;
+        ElapsedTime rampingDownTime = new ElapsedTime();
+        double timeVariable;
 
         public void rotationMovement(double rotationSpeed){
 
+
+
+            if(rotationSpeed == 0){
+
+                timeVariable = rampingDownTime.milliseconds();
+
+                if(rampingDownTime.milliseconds() > RAMPING_DOWN_TIME){
+                    timeVariable = RAMPING_DOWN_TIME;
+                }
+
+                if(rampingDown){
+                    rotationSpeed = alpha * timeVariable + beaconMotorSpeed;
+                }
+
+                if(!rampingDown){
+                    beaconMotorSpeed = mechRotation.getPower();
+                    alpha = -(beaconMotorSpeed / RAMPING_DOWN_TIME);
+                    rampingDownTime.reset();
+                    rampingDown = true;
+                }
+
+
+            }
+
+
             if(mechRotation.getCurrentPosition() < 5){
                 rotationSpeed = 0;
+            }
+
+            if(rotationSpeed == 0){
+                rampingDown = false;
             }
 
             mechRotation.setPower(rotationSpeed);

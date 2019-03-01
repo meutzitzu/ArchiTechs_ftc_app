@@ -351,11 +351,27 @@ public class Autonom2 extends LinearOpMode {
             }
             robot.mecanumMovement(0, 0, 0);
 
+            alignWithWallAndPlaceToy();
+
     }
 
     private void alignWithWallAndPlaceToy() {
 
+         if (mineralPosition == 1){
+            robot.absgyroRotation(45, "absolute");
+        } else if(mineralPosition == 3) {
+            robot.absgyroRotation(135, "absolute");
+        }
 
+        while(robot.distanceSensor.getDistance(DistanceUnit.CM) > 40){
+            robot.mecanumMovement(0, .5, 0);
+        }
+        robot.mecanumMovement(0, 0, 0);
+
+        placeToy();
+    }
+
+    private void placeToy() {
 
     }
 

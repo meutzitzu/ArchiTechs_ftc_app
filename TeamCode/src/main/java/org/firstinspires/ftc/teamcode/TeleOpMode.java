@@ -12,6 +12,7 @@ public class TeleOpMode extends LinearOpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
     ElapsedTime drivingModeSwitchTimer = new ElapsedTime();
+    ElapsedTime stopperTimer = new ElapsedTime();
 
     //new object as robot with all properties and methods
     Robot robot = new Robot();
@@ -27,6 +28,8 @@ public class TeleOpMode extends LinearOpMode {
     int extensionGrabber = 0; // 1 -> extending, 0 -> idle, -1 -> retracting
     String drivingMode = "Local";
     boolean rotationAdjust = true;
+    boolean grabberMoving = false;
+    boolean stopperOpen = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -35,6 +38,7 @@ public class TeleOpMode extends LinearOpMode {
         waitForStart();
         runtime.reset();
         drivingModeSwitchTimer.reset();
+        stopperTimer.reset();
 
         while(opModeIsActive()){
 
@@ -196,7 +200,7 @@ public class TeleOpMode extends LinearOpMode {
 
             //rotation movement
 
-            if(gamepad2.right_bumper == true){
+            if(gamepad2.left_trigger > 0.5){
                 rotationAdjust = !rotationAdjust;
                 if(rotationAdjust){
                     robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -215,27 +219,36 @@ public class TeleOpMode extends LinearOpMode {
 
 
             //Grabber servo
-            if (gamepad1.right_trigger != 0){
-                if(gamepad1.right_bumper){
-                    grabDirection = -1;
-                }
-                else {
-                    grabDirection = 1;
-                }
-
-                robot.mechGrab.setPower(grabDirection * robot.MAX_CRSERVO_INPUT);
-
+            if (gamepad2.dpad_up) {
+                robot.mechGrab.setPower(-robot.GRABBING_SPEED);
+                grabberMoving = true;
             }
-            else {
+            if(gamepad2.dpad_down){
                 robot.mechGrab.setPower(0);
-                grabDirection = 1;
+                grabberMoving = false;
             }
 
-            telemetry.addData("Lift position", robot.mechLiftLeft.getCurrentPosition() + " " + robot.mechLiftRight.getCurrentPosition());
-            telemetry.addData("Lift ext", robot.mechExt.getCurrentPosition());
-            telemetry.addData("Gyro pos", robot.modernRoboticsI2cGyro.getIntegratedZValue());
-            telemetry.addData("Distance from sensor: ", robot.distanceSensor.getDistance(DistanceUnit.CM));
-            telemetry.addData("Lateral distance", robot.lateralDistanceSensor.getDistance(DistanceUnit.CM));
+
+            //stopper servo
+            if(gamepad2.left_bumper && !grabberMoving) {
+                    stopperOpen = !stopperOpen;
+            }
+
+            if(stopperOpen){
+                robot.mechStopper.setPosition(robot.STOPPER_OPEN);
+            }
+            else{
+                robot.mechStopper.setPosition(robot.STOPPER_CLOSED);
+            }
+
+
+
+
+            telemetry.addData("Arm adjust", rotationAdjust);
+            telemetry.addData("controller", rotationspeed);
+            telemetry.addData("arm speed", robot.mechRotation.getPower());
+            telemetry.addData("grabber vaue", grabberMoving);
+            telemetry.addData("stopper", robot.mechStopper.getPosition());
             telemetry.update();
 
         }
