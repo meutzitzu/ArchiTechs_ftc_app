@@ -71,7 +71,7 @@ public class TeleOpMode extends LinearOpMode {
             turn = gamepad1.right_stick_x;
 
             /** Controller 2 input -> to be aux controller */
-            rotationspeed = gamepad2.left_stick_y;
+            rotationspeed = gamepad2.right_stick_y;
 
             brakeFactor = 1 - gamepad1.right_trigger;
 
@@ -88,23 +88,22 @@ public class TeleOpMode extends LinearOpMode {
             }
 
 
+            brakeFactor_2 = 1;
 
 
-            if(!gamepad2.y && !gamepad1.a)
+            if(gamepad2.right_trigger == 0 && gamepad2.left_trigger == 0)
                 extensionGrabber = 0;
-            else if(gamepad2.y) {
+            else if(gamepad2.right_trigger > 0) {
                 extensionGrabber = 1;
                 if(robot.mechExt.getMode() != DcMotor.RunMode.RUN_USING_ENCODER)
                 robot.mechExt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
-            else if(gamepad2.a) {
+            else if(gamepad2.left_trigger > 0) {
                 extensionGrabber = -1;
                 if(robot.mechExt.getMode() != DcMotor.RunMode.RUN_USING_ENCODER)
                 robot.mechExt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
 
-            /**Controller 2 input -> to be mineral collection controller*/
-            brakeFactor_2 = 1 - gamepad2.right_trigger;
 
 
             //mechExt Servo
@@ -132,18 +131,13 @@ public class TeleOpMode extends LinearOpMode {
                 }
             }
             else {
-                robot.mechExt.setPower(robot.useBrake(mechExtSpeed, brakeFactor_2, false));
+                robot.mechExt.setPower(robot.useBrake(mechExtSpeed, brakeFactor_2, true));
             }
 
             //Lift motors
 
                 //Overwritting lift upper limit
-                if(gamepad1.left_bumper){
-                    liftOverwitting = true;
-                }
-                else if(!gamepad1.left_bumper){
-                    liftOverwitting = false;
-                }
+                liftOverwitting = true;
 
             if(gamepad1.b){
                 if(liftOverwitting){
@@ -168,19 +162,19 @@ public class TeleOpMode extends LinearOpMode {
 
                 //adjusting lift motors if needed -> 2nd controller
 //
-            else if(gamepad2.b){
-                robot.mechLiftRight.setPower(1);
-            }
-            else if(gamepad2.a){
-                robot.mechLiftRight.setPower(-1);
-            }
-
-            else if(gamepad2.y){
-                robot.mechLiftLeft.setPower(1);
-            }
-            else if(gamepad2.x){
-                robot.mechLiftLeft.setPower(-1);
-            }
+//            else if(gamepad2.b){
+//                robot.mechLiftRight.setPower(1);
+//            }
+//            else if(gamepad2.a){
+//                robot.mechLiftRight.setPower(-1);
+//            }
+//
+//            else if(gamepad2.y){
+//                robot.mechLiftLeft.setPower(1);
+//            }
+//            else if(gamepad2.x){
+//                robot.mechLiftLeft.setPower(-1);
+//            }
 
 
 
@@ -236,14 +230,14 @@ public class TeleOpMode extends LinearOpMode {
                 robot.rotationMovement(rotationspeed * robot.ROTATION_SPEED_MODIFIER, newMaxRotation);
 
             if(gamepad1.dpad_down && robot.mechRotation.getMode() == DcMotor.RunMode.RUN_TO_POSITION){
-                robot.mechRotation.setTargetPosition(robot.mechExt.getCurrentPosition() + 10);
+                robot.mechRotation.setTargetPosition(robot.mechRotation.getCurrentPosition() + 10);
             }
 
 
 
             //Grabber servo
 
-            if(gamepad1.left_bumper){
+            if(gamepad2.right_bumper){
                 grabberMoving = true;
             }
             else {
@@ -274,11 +268,8 @@ public class TeleOpMode extends LinearOpMode {
 
 
 
-            telemetry.addData("Arm adjust", rotationAdjust);
-            telemetry.addData("controller", rotationspeed);
-            telemetry.addData("Driving", robot.driveFrontLeft.getCurrentPosition());
-            telemetry.addData("arm pos", robot.mechRotation.getCurrentPosition());
-            telemetry.addData("arm mode", robot.mechRotation.getMode());
+           telemetry.addData("a", gamepad2.a);
+            telemetry.addData("power", robot.mechExt.getPower());
             telemetry.update();
 
         }

@@ -155,29 +155,19 @@ public class Autonom extends LinearOpMode {
 
         double distanceFromBackWall = robot.distanceSensor.getDistance(DistanceUnit.CM);
 
-        while(distanceFromBackWall < 170){
-            robot.mecanumMovement(0, -.75, 0);
-            distanceFromBackWall = robot.distanceSensor.getDistance(DistanceUnit.CM);
-
-            telemetry.addLine("moving toward crater");
-            telemetry.addData("d: ", distanceFromBackWall);
-
+        robot.setDrivetrainPosition(3000, "translation", 1);
+        while(robot.driveRearLeft.isBusy()){
 
         }
-
-        telemetry.update();
         robot.mecanumMovement(0, 0, 0);
 
-        while(opModeIsActive()){
-
-        }
 
         releaseGrabber();
 
     }
 
     private void releaseGrabber() {
-
+        stop();
     }
 
     private void moveToSquareAndReleaseToy() {
@@ -197,6 +187,14 @@ public class Autonom extends LinearOpMode {
         }
 
         robot.mecanumMovement(0, 0, 0);
+
+        runtime.reset();
+        robot.mechGrab.setPower(.8);
+        while(runtime.seconds() < 1){
+            telemetry.addLine("waiting for the toy");
+            telemetry.update();
+        }
+        robot.mechGrab.setPower(0);
 
         telemetry.update();
 
@@ -244,7 +242,7 @@ public class Autonom extends LinearOpMode {
         int mineralsRecognized = 0; // sum of the first 3 elements of the array
         int mineralCounter, previousmineralsRecognized = 0;
 
-        int leftPosition = -50, midPosition = -82, rightPosition = -120;
+        int leftPosition = -50, midPosition = -84, rightPosition = -120;
 
 
         int hittingMineralDistance = 0;
@@ -262,8 +260,9 @@ public class Autonom extends LinearOpMode {
         }
 
 
+        mineralRetrievalTimer.reset();
 
-        while(tfod != null && mineralsRecognized < 2 && !isStopRequested() && mineralRetrievalTimer.seconds() < 10){
+        while(tfod != null && mineralsRecognized < 2 && !isStopRequested() && mineralRetrievalTimer.seconds() < 17){
 
             k = 0;
 
@@ -299,6 +298,7 @@ public class Autonom extends LinearOpMode {
                                     extremecoordinatesMinerals[2][i] = goldMineralX;
                                     extremecoordinatesMinerals[1][i] = robot.modernRoboticsI2cGyro.getIntegratedZValue();
                                     extremecoordinatesMinerals[0][i] = 2;
+                                    extremecoordinatesMinerals[3][i] = robot.VutoDegrees(extremecoordinatesMinerals[2][i]) + Math.abs(extremecoordinatesMinerals[1][i]);
                                     break;
                                 }
                             }
@@ -319,20 +319,32 @@ public class Autonom extends LinearOpMode {
                                     extremecoordinatesMinerals[2][i] = silverMineralX;
                                     extremecoordinatesMinerals[1][i] = robot.modernRoboticsI2cGyro.getIntegratedZValue();
                                     extremecoordinatesMinerals[0][i] = 1;
+                                    extremecoordinatesMinerals[3][i] = robot.VutoDegrees(extremecoordinatesMinerals[2][i]) + Math.abs(extremecoordinatesMinerals[1][i]);
                                     break;
                                 }
                             }
                             telemetry.addData("Silver mineral placed first", "wqm");
-                        } else {
-                            if (mineralCounter > 1 && k == 2) {
+                        } else if (mineralCounter > 1 && k == 2) {
                                 for (int i = 1; i <= 3; i++) {
                                     if (extremecoordinatesMinerals[0][i] == 0) {
                                         extremecoordinatesMinerals[2][i] = silverMineralX;
                                         extremecoordinatesMinerals[1][i] = robot.modernRoboticsI2cGyro.getIntegratedZValue();
                                         extremecoordinatesMinerals[0][i] = 1;
-                                        telemetry.addData("Added the second mineral", "seeing both");
+                                        extremecoordinatesMinerals[3][i] = robot.VutoDegrees(extremecoordinatesMinerals[2][i]) + Math.abs(extremecoordinatesMinerals[1][i]);
+                                        telemetry.addData("Added the second mineral", "seeing only the second one");
                                         break;
                                     }
+                                }
+                            }
+                            else if(Math.abs(extremecoordinatesMinerals[3][1] - (robot.VutoDegrees(silverMineralX) + Math.abs(robot.modernRoboticsI2cGyro.getIntegratedZValue()))) > 15){
+                            for (int i = 1; i <= 3; i++) {
+                                if (extremecoordinatesMinerals[0][i] == 0) {
+                                    extremecoordinatesMinerals[2][i] = silverMineralX;
+                                    extremecoordinatesMinerals[1][i] = robot.modernRoboticsI2cGyro.getIntegratedZValue();
+                                    extremecoordinatesMinerals[0][i] = 1;
+                                    extremecoordinatesMinerals[3][i] = robot.VutoDegrees(extremecoordinatesMinerals[2][i]) + Math.abs(extremecoordinatesMinerals[1][i]);
+                                    telemetry.addData("Added the second mineral", "seeing both");
+                                    break;
                                 }
                             }
 
@@ -348,6 +360,10 @@ public class Autonom extends LinearOpMode {
                         break;
                     }
                 }
+            }
+
+            if(mineralRetrievalTimer.seconds() >= 17){
+                stop();
             }
 
 
@@ -421,6 +437,7 @@ public class Autonom extends LinearOpMode {
         telemetry.update();
 
 
+
         switch (goldMineralPosition){
             case 1:
                 robot.absgyroRotation(leftPosition, "absolute");
@@ -436,9 +453,21 @@ public class Autonom extends LinearOpMode {
                 robot.absgyroRotation(rightPosition, "absolute");
                 hittingMineralDistance = -3200;
                 break;
+
+            default:
+                hittingMineralDistance = 0;
+                telemetry.addLine("No gold mineral");
+                telemetry.update();
+                stop();
         }
 
+
+
         robot.setDrivetrainPosition(hittingMineralDistance, "translation", .8);
+
+        while (opModeIsActive()){
+
+        }
 
         while(robot.driveRearLeft.isBusy()){
             telemetry.addLine("Hitting the mineral");
@@ -450,6 +479,10 @@ public class Autonom extends LinearOpMode {
 
 
     private void deployRobot() {
+
+        robot.mechRotation.setTargetPosition(130);
+        robot.mechRotation.setPower(0.8);
+
         while(robot.mechLiftLeft.getCurrentPosition() < robot.MAX_LIFT_POSITION &&
                 robot.mechLiftRight.getCurrentPosition() < robot.MAX_LIFT_POSITION && !isStopRequested()){
             robot.liftMovement(robot.LIFT_SPEED, false);
@@ -497,8 +530,7 @@ public class Autonom extends LinearOpMode {
         robot.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
         initialLiftPosition = robot.mechLiftLeft.getCurrentPosition();
 
-        robot.mechRotation.setTargetPosition(130);
-        robot.mechRotation.setPower(0.8);
+
         initVuforia();
 
         if (ClassFactory.getInstance().canCreateTFObjectDetector()) {

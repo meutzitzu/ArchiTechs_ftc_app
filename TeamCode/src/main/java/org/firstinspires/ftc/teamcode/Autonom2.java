@@ -73,6 +73,10 @@ public class Autonom2 extends LinearOpMode {
     }
 
     private void deployRobot() {
+
+        robot.mechRotation.setTargetPosition(130);
+        robot.mechRotation.setPower(0.8);
+
         while(robot.mechLiftLeft.getCurrentPosition() < robot.MAX_LIFT_POSITION &&
                 robot.mechLiftRight.getCurrentPosition() < robot.MAX_LIFT_POSITION && !isStopRequested()){
             robot.liftMovement(robot.LIFT_SPEED, false);
@@ -125,7 +129,7 @@ public class Autonom2 extends LinearOpMode {
         int mineralsRecognized = 0; // sum of the first 3 elements of the array
         int mineralCounter, previousmineralsRecognized = 0;
 
-        int leftPosition = -50, midPosition = -82, rightPosition = -120;
+        int leftPosition = -50, midPosition = -87, rightPosition = -120;
 
         int hittingMineralDistance = 0;
 
@@ -317,6 +321,13 @@ public class Autonom2 extends LinearOpMode {
                 robot.absgyroRotation(rightPosition, "absolute");
                 hittingMineralDistance = -3200;
                 break;
+
+            default:
+                hittingMineralDistance = 0;
+                telemetry.addLine("No gold mineral");
+                telemetry.update();
+                stop();
+
         }
 
         robot.setDrivetrainPosition(hittingMineralDistance, "translation", .8);
@@ -335,8 +346,6 @@ public class Autonom2 extends LinearOpMode {
         robot.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
         initialLiftPosition = robot.mechLiftLeft.getCurrentPosition();
 
-        robot.mechRotation.setTargetPosition(130);
-        robot.mechRotation.setPower(0.8);
 
         initVuforia();
 
@@ -349,9 +358,17 @@ public class Autonom2 extends LinearOpMode {
     }
 
     private void moveToEnd() {
+            if(goldMineralPosition == 3){
+
+                robot.setDrivetrainPosition(2500, "translation", 1);
+                while(robot.driveRearLeft.isBusy()){
+
+                }
+                stop();
+            }
 
             telemetry.addLine("mineral position: " + goldMineralPosition);
-            while(robot.distanceSensor.getDistance(DistanceUnit.CM) > 20){
+            while(robot.distanceSensor.getDistance(DistanceUnit.CM) > 20 && goldMineralPosition != 2){
                 if(robot.distanceSensor.getDistance(DistanceUnit.CM) < 40)
                     robot.mecanumMovement(0, .3, 0);
                 else
@@ -362,17 +379,20 @@ public class Autonom2 extends LinearOpMode {
             robot.mecanumMovement(0, 0, 0);
             telemetry.update();
             alignWithWallAndPlaceToy();
-            goToCrater();
 
+            goToCrater();
+            stop();
     }
 
     private void goToCrater() {
+        if(goldMineralPosition == 3)
+            return;
         robot.setDrivetrainMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.mecanumMovement(0, 0, 0);
         robot.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         robot.mecanumMovement(0, -1, 0);
-        while(robot.distanceSensor.getDistance(DistanceUnit.CM) < 170){
+        while(robot.distanceSensor.getDistance(DistanceUnit.CM) < 100 && !isStopRequested()){
             robot.mecanumMovement(0, -1, 0);
         }
         robot.mecanumMovement(0, 0, 0);
@@ -381,37 +401,54 @@ public class Autonom2 extends LinearOpMode {
     private void alignWithWallAndPlaceToy() {
 
          if (goldMineralPosition == 1){
-            robot.absgyroRotation(-135, "absolute");
+            robot.absgyroRotation(-130, "absolute");
         } else if(goldMineralPosition == 3) {
             robot.absgyroRotation(-45, "absolute");
         }
         if(goldMineralPosition == 2){
-            robot.setDrivetrainPosition(-200, "translation", .8);
-        } else
-            while(robot.distanceSensor.getDistance(DistanceUnit.CM) > 40){
-                robot.mecanumMovement(0, .5, 0);
-            }
+            robot.setDrivetrainPosition(-1200, "translation", .8);
+            while(robot.driveRearLeft.isBusy()){
 
-        robot.mecanumMovement(0, 0, 0);
+            }
+        } else {
+            while (robot.distanceSensor.getDistance(DistanceUnit.CM) > 40 && goldMineralPosition != 2 && !isStopRequested()) {
+                robot.mecanumMovement(0, .5, 0);
+
+            }
+            robot.mecanumMovement(0, 0, 0);
+        }
 
         placeToy();
+        if(goldMineralPosition == 2){
 
-        while(robot.distanceSensor.getDistance(DistanceUnit.CM) > 15 && goldMineralPosition == 3)
+            robot.setDrivetrainPosition(3200, "translation", 1);
+            while(robot.driveRearLeft.isBusy() && !isStopRequested()){
+
+            }
+            return;
+        }
+        if(goldMineralPosition == 3)
+            return;
+        while (robot.distanceSensor.getDistance(DistanceUnit.CM) > 15 && !isStopRequested() && goldMineralPosition == 1)
             robot.mecanumMovement(0, .5, 0);
+
         robot.mecanumMovement(0, 0, 0);
 
-        robot.absgyroRotation(-135, "absolute");
+        if(goldMineralPosition != 2) {
+            robot.absgyroRotation(-135, "absolute");
+        }
     }
 
     private void placeToy() {
         runtime.reset();
         robot.mechGrab.setPower(.8);
-        while(runtime.seconds() < 1){
+        while(runtime.seconds() < 1 && !isStopRequested()){
             telemetry.addLine("waiting for the toy");
+            telemetry.update();
         }
         robot.mechGrab.setPower(0);
 
-        telemetry.update();
+
     }
 
     private void initVuforia() {
