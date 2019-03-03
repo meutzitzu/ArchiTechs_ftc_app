@@ -483,6 +483,10 @@ public class Robot {
             driveRearLeft.setPower(maxSpeed);
             driveRearRight.setPower(maxSpeed);
 
+            while(driveRearLeft.isBusy() && driveRearRight.isBusy() && driveFrontRight.isBusy() && driveFrontLeft.isBusy() && !opMode.isStopRequested()){
+                //this while is waiting for the wheels to get in position
+            }
+
 
         }
 
