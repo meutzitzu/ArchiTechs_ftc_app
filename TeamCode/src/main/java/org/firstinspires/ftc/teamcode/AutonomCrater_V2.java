@@ -24,6 +24,7 @@ public class AutonomCrater_V2 extends LinearOpMode {
         private int initialLiftPosition;
 
         private final String VUFORIA_KEY = "AWcgpa7/////AAABmcy/3X8/j0O5rVl/TFsI7jtI2X65iRJuPT0JA+JxFlcGoXjuri+AHgItnHFgUGE5xkMhjhPpZ57eT9HxlpFmryfrXSxOYlX58SyvvCbZo+ftIlY4+x3iNw03eNywXKmPBdM7jmGEk6G1HViitwJy8CrOooxYAl37Vh7w0BZipSRVSDKg0AA+jj7ExvVYPedxSBlkTpR9VyUe7hNfWlK/ijmNcpmiYVYomUbPmef2TqIkxSYvBJKZF7vblCmtlmiSrmY1zyO7Y9xKk46vQ8x7cL8tTZG0zDzfDEC12KbCAJLqSN0qju6Z1gsTAIEJmwvAG0YAfKvZf7oSwtno0t7ZfhfY/2LUws3ydkJUVyZGOB7k";
+        final String side = "Crater";
 
         private VuforiaLocalizer vuforia;
         private TFObjectDetector tfod;
@@ -260,5 +261,9 @@ public class AutonomCrater_V2 extends LinearOpMode {
          void parkingTheArm(){
 
          }
+
+
+         //auxiliary functions
+         int gyroValue(){ return robot.globalGyroValue(side); }
 
 }

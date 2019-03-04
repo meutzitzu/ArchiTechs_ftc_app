@@ -43,7 +43,6 @@ public class Robot {
         public Telemetry telemetry;
         public LinearOpMode opMode;
 
-        public String Side = "Krater";
 
     /** Global constants */
         public final double MAX_CRSERVO_INPUT = 0.82;  //max power that can be
@@ -258,7 +257,6 @@ public class Robot {
 
             telemetry.clear();
             telemetry.addData("Driving mode", "Global");
-            telemetry.addData("gyro orientated", this.globalGyroValue(Side));
             telemetry.addData("new driveX", driveX);
             telemetry.addData("new driveY", driveY);
             telemetry.update();
@@ -496,6 +494,7 @@ public class Robot {
             double error;
             double outSpeed;
             boolean CCW = false;
+            
 
             this.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -547,7 +546,7 @@ public class Robot {
             int gyroOrientatedZValue;
             int gyroReference = 0;
 
-            if(side == "Krater"){
+            if(side == "Crater"){
                 gyroReference = 45;
             }
             else if(side == "Deploy"){
@@ -573,5 +572,25 @@ public class Robot {
             return (int) degrees;
         }
 
+
+        public void gyroRotationWIP(double desiredTheta, String rotationType, String side){
+            int initialTheta, currentTheta;
+            int error;
+            double outSpeed;
+            String rotationDirection;
+
+            this.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            initialTheta = globalGyroValue(side);
+
+            if(rotationType.equals("absolute")){
+                //nothing to do
+            }
+            else if(rotationType.equals("relative")){
+                desiredTheta = (desiredTheta + initialTheta) % 360;
+            }
+
+
+        }
 
 }
