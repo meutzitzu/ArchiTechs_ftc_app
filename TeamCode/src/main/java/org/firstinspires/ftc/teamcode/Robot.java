@@ -2,9 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -38,8 +36,8 @@ public class Robot {
         public CRServo mechGrab = null;  //servo used on the grabber
         IntegratingGyroscope gyro;
         ModernRoboticsI2cGyro modernRoboticsI2cGyro;
-        public DistanceSensor distanceSensor;
-        public DistanceSensor lateralDistanceSensor;
+        public DistanceSensor leftDistanceSensor;
+        public DistanceSensor rightDistanceSensor;
         public Telemetry telemetry;
         public LinearOpMode opMode;
 
@@ -81,8 +79,8 @@ public class Robot {
         mechExt = hashMap.get(DcMotor.class, "mechExt");
         mechGrab = hashMap.get(CRServo.class, "mechGrab");
         mechStopper = hashMap.get(Servo.class, "mechStopper");
-        distanceSensor = hashMap.get(DistanceSensor.class, "distanceSensor");
-        lateralDistanceSensor = hashMap.get(DistanceSensor.class, "lateralDistanceSensor");
+        leftDistanceSensor = hashMap.get(DistanceSensor.class, "distanceSensorLeft");
+        rightDistanceSensor = hashMap.get(DistanceSensor.class, "distanceSensorRight");
         modernRoboticsI2cGyro = hashMap.get(ModernRoboticsI2cGyro .class, "gyro");
         gyro = (IntegratingGyroscope)modernRoboticsI2cGyro;
         telemetry = tele;

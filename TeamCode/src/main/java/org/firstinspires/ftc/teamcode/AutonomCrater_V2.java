@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -8,7 +9,7 @@ import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-
+@Disabled
 @Autonomous(name="Autonom Crater", group="Linear OpMode")
 public class AutonomCrater_V2 extends LinearOpMode {
 
@@ -224,13 +225,13 @@ public class AutonomCrater_V2 extends LinearOpMode {
             robot.absgyroRotation(0, "absolute");
 
             //alligning with the wall before going for the toy
-            while(robot.distanceSensor.getDistance(DistanceUnit.CM) > 15 && !isStopRequested()){
-                if(robot.distanceSensor.getDistance(DistanceUnit.CM) < 30)
+            while(robot.leftDistanceSensor.getDistance(DistanceUnit.CM) > 15 && !isStopRequested()){
+                if(robot.leftDistanceSensor.getDistance(DistanceUnit.CM) < 30)
                     robot.mecanumMovement(0, .3, 0);
                 else
                     robot.mecanumMovement(0, .7, 0);
 
-                telemetry.addLine("Distance from sensor: " + robot.distanceSensor.getDistance(DistanceUnit.CM));
+                telemetry.addLine("Distance from sensor: " + robot.leftDistanceSensor.getDistance(DistanceUnit.CM));
                 telemetry.update();
             }
             robot.mecanumMovement(0, 0, 0);
