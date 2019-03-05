@@ -79,7 +79,7 @@ public class TeleOpMode extends LinearOpMode {
                 robot.mecanumGlobalCoordinatesDriving(robot.useBrake(mecanumX, brakeFactor, false),
                         robot.useBrake(mecanumY, brakeFactor, false),
                         robot.useBrake(turn, brakeFactor, false),
-                        robot.globalGyroValue(robot.Side));
+                        robot.globalGyroValue("Crater"));
             }
             else if(drivingMode == "Local"){
                 robot.mecanumMovement(robot.useBrake(mecanumX, brakeFactor, false),
