@@ -82,7 +82,7 @@ public class Autonom extends LinearOpMode {
 
             ElapsedTime timeForCheck = new ElapsedTime();
 
-            while(tfod != null && !isStopRequested() && !foundGoldMineral && timeForCheck.milliseconds() < 1200) {
+            while(tfod != null && !isStopRequested() && !foundGoldMineral && timeForCheck.milliseconds() < 1000) {
                 telemetry.addLine("Searching..");
                 telemetry.update();
 
@@ -107,8 +107,16 @@ public class Autonom extends LinearOpMode {
                 robot.setDrivetrainPosition(1600, "translation", 1);
 
         }
-        if(foundGoldMineral)
-            robot.setDrivetrainPosition(2200, "strafing", .5);
+        if(foundGoldMineral) {
+            robot.setDrivetrainPosition(200, "translation", .7);
+            robot.absgyroRotation(-90, "absolute");
+
+            robot.setDrivetrainPosition(-1200, "translation", 1);
+
+            robot.setDrivetrainPosition(1200, "translation", 1);
+
+            robot.absgyroRotation(0, "absolute");
+        }
 
         if(tfod != null){
             tfod.shutdown();
@@ -132,7 +140,7 @@ public class Autonom extends LinearOpMode {
         robot.liftMovement(0, false);
         telemetry.clear();
 
-        robot.setDrivetrainPosition(-300, "translation", .6);
+        robot.setDrivetrainPosition(-300, "translation", 1);
 
         robot.setDrivetrainPosition(1500, "strafing", .5);
 
@@ -140,10 +148,11 @@ public class Autonom extends LinearOpMode {
 
         robot.setDrivetrainPosition(-1500, "strafing", .5);
 
-        robot.setDrivetrainPosition(-1800, "translation", 1);
+        robot.setDrivetrainPosition(-1600, "translation", 1);
 
         robot.absgyroRotation(0, "absolute");
 
+        robot.setDrivetrainPosition(400, "translation", 1);
 
 
     }
