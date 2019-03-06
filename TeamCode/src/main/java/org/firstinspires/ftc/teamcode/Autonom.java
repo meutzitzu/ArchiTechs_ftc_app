@@ -153,7 +153,7 @@ public class Autonom extends LinearOpMode {
 
     private void moveAndPutTheGrabberInCrater() {
 
-        double distanceFromBackWall = robot.distanceSensor.getDistance(DistanceUnit.CM);
+        double distanceFromBackWall = robot.leftDistanceSensor.getDistance(DistanceUnit.CM);
 
         robot.setDrivetrainPosition(3000, "translation", 1);
         while(robot.driveRearLeft.isBusy()){
@@ -172,10 +172,10 @@ public class Autonom extends LinearOpMode {
 
     private void moveToSquareAndReleaseToy() {
 
-        double currentDistanceToObject = robot.distanceSensor.getDistance(DistanceUnit.CM);
+        double currentDistanceToObject = robot.leftDistanceSensor.getDistance(DistanceUnit.CM);
 
         while(currentDistanceToObject > 40 && !isStopRequested()){
-            double newDistanceDetected = robot.distanceSensor.getDistance(DistanceUnit.CM);
+            double newDistanceDetected = robot.leftDistanceSensor.getDistance(DistanceUnit.CM);
 
             telemetry.addData("distance to back wall", newDistanceDetected);
 //            if(currentDistanceToObject - newDistanceDetected > 20){
@@ -198,18 +198,19 @@ public class Autonom extends LinearOpMode {
 
         telemetry.update();
 
+        System.out.println("am coaie masive");
     }
 
     private void moveNearWallAndAlign() {
 
         // moving toward the wall
-        while(robot.distanceSensor.getDistance(DistanceUnit.CM) > 15 && !isStopRequested()){
-            if(robot.distanceSensor.getDistance(DistanceUnit.CM) < 30)
+        while(robot.leftDistanceSensor.getDistance(DistanceUnit.CM) > 15 && !isStopRequested()){
+            if(robot.leftDistanceSensor.getDistance(DistanceUnit.CM) < 30)
                 robot.mecanumMovement(0, .3, 0);
             else
                 robot.mecanumMovement(0, .7, 0);
 
-            telemetry.addLine("Distance from sensor: " + robot.distanceSensor.getDistance(DistanceUnit.CM));
+            telemetry.addLine("Distance from sensor: " + robot.leftDistanceSensor.getDistance(DistanceUnit.CM));
             telemetry.update();
         }
         robot.mecanumMovement(0, 0, 0);
