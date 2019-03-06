@@ -368,12 +368,12 @@ public class Autonom2 extends LinearOpMode {
             }
 
             telemetry.addLine("mineral position: " + goldMineralPosition);
-            while(robot.distanceSensor.getDistance(DistanceUnit.CM) > 20 && goldMineralPosition != 2){
-                if(robot.distanceSensor.getDistance(DistanceUnit.CM) < 40)
+            while(robot.leftDistanceSensor.getDistance(DistanceUnit.CM) > 20 && goldMineralPosition != 2){
+                if(robot.leftDistanceSensor.getDistance(DistanceUnit.CM) < 40)
                     robot.mecanumMovement(0, .3, 0);
                 else
                     robot.mecanumMovement(0, .7, 0);
-                telemetry.addData("distance to wall", robot.distanceSensor.getDistance(DistanceUnit.CM));
+                telemetry.addData("distance to wall", robot.leftDistanceSensor.getDistance(DistanceUnit.CM));
                 // place toy
             }
             robot.mecanumMovement(0, 0, 0);
@@ -392,7 +392,7 @@ public class Autonom2 extends LinearOpMode {
         robot.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         robot.mecanumMovement(0, -1, 0);
-        while(robot.distanceSensor.getDistance(DistanceUnit.CM) < 100 && !isStopRequested()){
+        while(robot.leftDistanceSensor.getDistance(DistanceUnit.CM) < 100 && !isStopRequested()){
             robot.mecanumMovement(0, -1, 0);
         }
         robot.mecanumMovement(0, 0, 0);
@@ -411,7 +411,7 @@ public class Autonom2 extends LinearOpMode {
 
             }
         } else {
-            while (robot.distanceSensor.getDistance(DistanceUnit.CM) > 40 && goldMineralPosition != 2 && !isStopRequested()) {
+            while (robot.leftDistanceSensor.getDistance(DistanceUnit.CM) > 40 && goldMineralPosition != 2 && !isStopRequested()) {
                 robot.mecanumMovement(0, .5, 0);
 
             }
@@ -429,7 +429,7 @@ public class Autonom2 extends LinearOpMode {
         }
         if(goldMineralPosition == 3)
             return;
-        while (robot.distanceSensor.getDistance(DistanceUnit.CM) > 15 && !isStopRequested() && goldMineralPosition == 1)
+        while (robot.leftDistanceSensor.getDistance(DistanceUnit.CM) > 15 && !isStopRequested() && goldMineralPosition == 1)
             robot.mecanumMovement(0, .5, 0);
 
         robot.mecanumMovement(0, 0, 0);

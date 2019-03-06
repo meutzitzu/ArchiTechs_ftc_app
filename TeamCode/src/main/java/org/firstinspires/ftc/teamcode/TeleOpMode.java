@@ -31,6 +31,7 @@ public class TeleOpMode extends LinearOpMode {
     boolean grabberMoving = false;
     boolean stopperOpen = false;
     boolean liftOverwitting = false;
+    int testAngle = 45;
 
     int newMaxRotation = -420;
 
@@ -79,7 +80,7 @@ public class TeleOpMode extends LinearOpMode {
                 robot.mecanumGlobalCoordinatesDriving(robot.useBrake(mecanumX, brakeFactor, false),
                         robot.useBrake(mecanumY, brakeFactor, false),
                         robot.useBrake(turn, brakeFactor, false),
-                        robot.globalGyroValue(robot.Side));
+                        robot.globalGyroValue("Crater"));
             }
             else if(drivingMode == "Local"){
                 robot.mecanumMovement(robot.useBrake(mecanumX, brakeFactor, false),
@@ -155,26 +156,25 @@ public class TeleOpMode extends LinearOpMode {
                     robot.liftMovement(-robot.LIFT_SPEED, false);
                 }
             }
+
+                //adjusting lift motors if needed -> 2nd controller
+
+            else if(gamepad2.b){
+                robot.mechLiftRight.setPower(1);
+            }
+            else if(gamepad2.a){
+                robot.mechLiftRight.setPower(-1);
+            }
+
+            else if(gamepad2.y){
+                robot.mechLiftLeft.setPower(1);
+            }
+            else if(gamepad2.x){
+                robot.mechLiftLeft.setPower(-1);
+            }
             else if(!gamepad1.a && !gamepad1.b){
                 robot.liftMovement(0, false);
             }
-
-
-                //adjusting lift motors if needed -> 2nd controller
-//
-//            else if(gamepad2.b){
-//                robot.mechLiftRight.setPower(1);
-//            }
-//            else if(gamepad2.a){
-//                robot.mechLiftRight.setPower(-1);
-//            }
-//
-//            else if(gamepad2.y){
-//                robot.mechLiftLeft.setPower(1);
-//            }
-//            else if(gamepad2.x){
-//                robot.mechLiftLeft.setPower(-1);
-//            }
 
 
 
@@ -266,10 +266,24 @@ public class TeleOpMode extends LinearOpMode {
             }
 
 
+            if(gamepad2.dpad_up){
+                testAngle = 0;
+            }
+            if(gamepad2.dpad_down){
+                testAngle = 180;
+            }
+            if(gamepad2.dpad_right){
+                testAngle = 270;
+            }
+            if(gamepad2.dpad_left){
+                testAngle = 90;
+            }
 
 
-           telemetry.addData("a", gamepad2.a);
-            telemetry.addData("power", robot.mechExt.getPower());
+
+            telemetry.addData("Left lift", robot.mechLiftLeft.getCurrentPosition());
+            telemetry.addData("Right lift", robot.mechLiftRight.getCurrentPosition());
+
             telemetry.update();
 
         }

@@ -47,7 +47,7 @@ public class Robot {
         public final double LIFT_SPEED = 1;
         public final double ROTATION_SPEED_MODIFIER = 0.2;  //max angular velocity of the arm
         public final double MIN_LIFT_POSITION = 0;
-        public final int MAX_LIFT_POSITION = 22000;
+        public final int MAX_LIFT_POSITION = 23000;
         public final int MAX_ROTATION = 2300;  //will probably be ignored; used only as reference for minimum position
         public final int MIN_ROTATION = 0;  //useful
         public final int ROTATION_LENGTH = MAX_ROTATION - MIN_ROTATION; //
@@ -267,12 +267,12 @@ public class Robot {
 
             if(!nuAutonom) {
                 //Lowering safety
-                if (((mechLiftLeft.getCurrentPosition() > MAX_LIFT_POSITION) || (mechLiftRight.getCurrentPosition() > MAX_LIFT_POSITION)) && liftPower > 0) {
+                if (((mechLiftLeft.getCurrentPosition() > MAX_LIFT_POSITION - 5) && (mechLiftRight.getCurrentPosition() > MAX_LIFT_POSITION - 5)) && liftPower > 0) {
                     liftPower = 0;
                 }
 
                 //Raising safety
-                if ((mechLiftLeft.getCurrentPosition() < MIN_LIFT_POSITION + 5 || mechLiftRight.getCurrentPosition() < MIN_LIFT_POSITION + 5) && liftPower < 0) {
+                if ((mechLiftLeft.getCurrentPosition() < MIN_LIFT_POSITION + 5 && mechLiftRight.getCurrentPosition() < MIN_LIFT_POSITION + 5) && liftPower < 0) {
                     liftPower = 0;
                 }
             }
@@ -562,7 +562,7 @@ public class Robot {
 
         public int VutoDegrees(int VuX){
 
-            double degrees = -(25 / 540.0) * VuX + 25;
+            double degrees = -(25 / 270.0) * VuX + 25;
 
             return (int) degrees;
         }
@@ -625,16 +625,14 @@ public class Robot {
 
                 mecanumMovement(0, 0 ,-outSpeed);
 
-                telemetry.addData("Error", error);
-                telemetry.addData("output", outSpeed);
-                telemetry.update();
             }
 
 
 
             this.mecanumMovement(0,0,0);
 
-
+            telemetry.addLine("Rotation over");
+            telemetry.update();
 
         }
 
@@ -645,7 +643,7 @@ public class Robot {
                 numberToBeModuloed += 360;
             }
 
-            return  numberToBeModuloed;
+            return  result;
         }
 
 }
