@@ -2,9 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -38,8 +36,8 @@ public class Robot {
         public CRServo mechGrab = null;  //servo used on the grabber
         IntegratingGyroscope gyro;
         ModernRoboticsI2cGyro modernRoboticsI2cGyro;
-        public DistanceSensor distanceSensor;
-        public DistanceSensor lateralDistanceSensor;
+        public DistanceSensor leftDistanceSensor;
+        public DistanceSensor rightDistanceSensor;
         public Telemetry telemetry;
         public LinearOpMode opMode;
 
@@ -81,8 +79,8 @@ public class Robot {
         mechExt = hashMap.get(DcMotor.class, "mechExt");
         mechGrab = hashMap.get(CRServo.class, "mechGrab");
         mechStopper = hashMap.get(Servo.class, "mechStopper");
-        distanceSensor = hashMap.get(DistanceSensor.class, "distanceSensor");
-        lateralDistanceSensor = hashMap.get(DistanceSensor.class, "lateralDistanceSensor");
+        leftDistanceSensor = hashMap.get(DistanceSensor.class, "distanceSensorLeft");
+        rightDistanceSensor = hashMap.get(DistanceSensor.class, "distanceSensorRight");
         modernRoboticsI2cGyro = hashMap.get(ModernRoboticsI2cGyro .class, "gyro");
         gyro = (IntegratingGyroscope)modernRoboticsI2cGyro;
         telemetry = tele;
@@ -114,9 +112,6 @@ public class Robot {
         mechExt.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         mechExt.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         mechExt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-
-
 
 
         if(!teleOp) {
@@ -567,30 +562,90 @@ public class Robot {
 
         public int VutoDegrees(int VuX){
 
-            double degrees = (25 / 540.0) * VuX - 25;
+            double degrees = -(25 / 540.0) * VuX + 25;
 
             return (int) degrees;
         }
 
 
-        public void gyroRotationWIP(double desiredTheta, String rotationType, String side){
+        public void gyroRotationWIP(int desiredTheta, String rotationType, String side){
             int initialTheta, currentTheta;
             int error;
             double outSpeed;
-            String rotationDirection;
+            double proportionalConstant = 0.027;
 
             this.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-            initialTheta = globalGyroValue(side);
-
-            if(rotationType.equals("absolute")){
-                //nothing to do
+            if(side.equals("Crater")){
+                desiredTheta = desiredTheta - 45;
             }
-            else if(rotationType.equals("relative")){
-                desiredTheta = (desiredTheta + initialTheta) % 360;
+            else if(side.equals("Deploy")){
+                desiredTheta = desiredTheta - 135;
             }
 
+            initialTheta = mathModulo(modernRoboticsI2cGyro.getIntegratedZValue(),360);
 
+            desiredTheta = mathModulo(desiredTheta, 360);
+
+            //all here is done under the gyro's initial calib in a non-incremental way
+
+
+            //making the initial position equal the 0 indication o gyro
+            currentTheta = 0;
+
+            if(mathModulo(desiredTheta - initialTheta, 360) <= 180){
+                ///CCW
+                error = mathModulo(desiredTheta - initialTheta, 360);
+            }
+            else{
+                ///CW
+                error = mathModulo(desiredTheta - initialTheta, 360) - 360;
+            }
+
+            //getting the error
+
+            while (Math.abs(error) > 2 && !opMode.isStopRequested()) {
+
+
+                currentTheta = mathModulo(modernRoboticsI2cGyro.getIntegratedZValue(), 360);
+
+                if(mathModulo(desiredTheta - currentTheta, 360) <= 180){
+                        error = mathModulo(desiredTheta - currentTheta, 360);
+                        outSpeed = proportionalConstant * error;
+                }
+                else{
+                        error = mathModulo(desiredTheta-currentTheta, 360) - 360;
+                        outSpeed = proportionalConstant * error;
+
+                }
+
+
+                outSpeed = Range.clip(outSpeed, -1, 1);
+
+
+                mecanumMovement(0, 0 ,-outSpeed);
+
+                telemetry.addData("Error", error);
+                telemetry.addData("output", outSpeed);
+                telemetry.update();
+            }
+
+
+
+            this.mecanumMovement(0,0,0);
+
+
+
+        }
+
+        public int mathModulo(int numberToBeModuloed, int n){
+            int result = numberToBeModuloed % n;
+
+            if(numberToBeModuloed < 0){
+                numberToBeModuloed += 360;
+            }
+
+            return  numberToBeModuloed;
         }
 
 }
