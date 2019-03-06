@@ -571,24 +571,78 @@ public class Robot {
         }
 
 
-        public void gyroRotationWIP(double desiredTheta, String rotationType, String side){
-            int initialTheta, currentTheta;
-            int error;
-            double outSpeed;
-            String rotationDirection;
+    public void gyroRotationWIP(int desiredTheta, String rotationType, String side){
+        int initialTheta, currentTheta;
+        int error;
+        double outSpeed;
+        double proportionalConstant = 0.027;
 
-            this.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        this.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-            initialTheta = globalGyroValue(side);
-
-            if(rotationType.equals("absolute")){
-                //nothing to do
-            }
-            else if(rotationType.equals("relative")){
-                desiredTheta = (desiredTheta + initialTheta) % 360;
-            }
-
-
+        if(side.equals("Crater")){
+            desiredTheta = desiredTheta - 45;
+        }
+        else if(side.equals("Deploy")){
+            desiredTheta = desiredTheta - 135;
         }
 
+        initialTheta = mathModulo(modernRoboticsI2cGyro.getIntegratedZValue(),360);
+
+        desiredTheta = mathModulo(desiredTheta, 360);
+
+        //all here is done under the gyro's initial calib in a non-incremental way
+
+
+        //making the initial position equal the 0 indication o gyro
+        currentTheta = 0;
+
+        if(mathModulo(desiredTheta - initialTheta, 360) <= 180){
+            ///CCW
+            error = mathModulo(desiredTheta - initialTheta, 360);
+        }
+        else{
+            ///CW
+            error = mathModulo(desiredTheta - initialTheta, 360) - 360;
+        }
+
+        //getting the error
+
+        while (Math.abs(error) > 2 && !opMode.isStopRequested()) {
+
+
+            currentTheta = mathModulo(modernRoboticsI2cGyro.getIntegratedZValue(), 360);
+
+            if(mathModulo(desiredTheta - currentTheta, 360) <= 180){
+                error = mathModulo(desiredTheta - currentTheta, 360);
+                outSpeed = proportionalConstant * error;
+            }
+            else{
+                error = mathModulo(desiredTheta-currentTheta, 360) - 360;
+                outSpeed = proportionalConstant * error;
+
+            }
+
+
+            outSpeed = Range.clip(outSpeed, -1, 1);
+
+            mecanumMovement(0, 0 ,-outSpeed);
+
+            telemetry.addData("Error", error);
+            telemetry.addData("output", outSpeed);
+            telemetry.update();
+        }
+
+        this.mecanumMovement(0,0,0);
+
+    }
+
+    public int mathModulo(int numberToBeModuloed, int n){
+        int result = numberToBeModuloed % n;
+
+        if(numberToBeModuloed < 0){
+            numberToBeModuloed += 360;
+        }
+
+        return  result;
+    }
 }
