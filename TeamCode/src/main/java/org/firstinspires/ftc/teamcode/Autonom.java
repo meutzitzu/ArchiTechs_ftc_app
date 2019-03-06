@@ -12,6 +12,8 @@ import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 @Autonomous(name="Autonom Crater", group="Linear OpMode")
 public class Autonom extends LinearOpMode {
@@ -29,6 +31,8 @@ public class Autonom extends LinearOpMode {
     ElapsedTime runtime = new ElapsedTime();
     private int initialLiftPosition = 0;
     private boolean testingEnabled = true;
+
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -56,7 +60,6 @@ public class Autonom extends LinearOpMode {
         telemetry.addData("Deploy", "Over");
         telemetry.update();
 
-        initiateRecognition();
         telemetry.clear();
         telemetry.addData("Hitting mineral", "Over");
 
@@ -65,94 +68,75 @@ public class Autonom extends LinearOpMode {
     }
 
     private void navigateToDeploy() {
-
         stop();
-
     }
 
-    private  void  initiateRecognition(){
+    private Future<Integer> getMineralAsync() throws InterruptedException {
+        return executorService.submit(new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
 
-        boolean foundGoldMineral = false;
+                boolean foundMineral = false;
+                int mineralPosition = -1;
+                ElapsedTime time = new ElapsedTime();
+                if(tfod != null)
+                    tfod.activate();
+                while(time.seconds() < 8 && !foundMineral && tfod != null){
+                    List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
 
-        if (tfod != null) {
-            tfod.activate();
-        }
+                    if (updatedRecognitions != null && updatedRecognitions.size() == 3) {
+                        foundMineral = true;
+                        float goldMineralX = -1;
+                        float silverMineral1X = -1;
+                        float silverMineral2X = -1;
+                        for(int i=0; i<3; i++){
+                            if(updatedRecognitions.get(i).getLabel().equals(LABEL_GOLD_MINERAL)){
+                                goldMineralX = updatedRecognitions.get(i).getLeft();
+                            } else if (silverMineral1X == -1){
+                                silverMineral1X = updatedRecognitions.get(i).getLeft();
+                            } else {
+                                silverMineral2X = updatedRecognitions.get(i).getLeft();
+                            }
+                        }
 
-        for(int index = 0; index < 3 && !isStopRequested(); index++){
-
-            ElapsedTime timeForCheck = new ElapsedTime();
-
-            while(tfod != null && !isStopRequested() && !foundGoldMineral && timeForCheck.milliseconds() < 1000) {
-                telemetry.addLine("Searching..");
-                telemetry.update();
-
-                List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-
-                if (updatedRecognitions != null) {
-
-                    for(Recognition recognition : updatedRecognitions){
-                        if(recognition.getLabel().equals(LABEL_GOLD_MINERAL)){
-                            telemetry.addLine("Found gold mineral at position: " + index +
-                                    " after: " + timeForCheck.milliseconds() + " milliseconds");
-                            foundGoldMineral = true;
-                            telemetry.update();
+                        if(goldMineralX < silverMineral1X && goldMineralX < silverMineral2X){
+                            mineralPosition = 1;
+                        } else if(goldMineralX > silverMineral1X && goldMineralX > silverMineral2X){
+                            mineralPosition = 3;
+                        } else {
+                            mineralPosition = 2;
                         }
                     }
-
                 }
+                tfod.shutdown();
+                return mineralPosition;
             }
-            if(foundGoldMineral)
-                break;
-            if(index != 2)
-                robot.setDrivetrainPosition(1600, "translation", 1);
 
-        }
-        if(foundGoldMineral) {
-            robot.setDrivetrainPosition(200, "translation", .7);
-            robot.absgyroRotation(-90, "absolute");
-
-            robot.setDrivetrainPosition(-1200, "translation", 1);
-
-            robot.setDrivetrainPosition(1200, "translation", 1);
-
-            robot.absgyroRotation(0, "absolute");
-        }
-
-        if(tfod != null){
-            tfod.shutdown();
-        }
-
-        while(opModeIsActive()){
-
-        }
+        });
 
     }
 
+    private void deployRobot() throws InterruptedException {
 
-    private void deployRobot() {
-
+        Future<Integer> mineralPosition = getMineralAsync();
         while(robot.mechLiftLeft.getCurrentPosition() < robot.MAX_LIFT_POSITION &&
                 robot.mechLiftRight.getCurrentPosition() < robot.MAX_LIFT_POSITION && !isStopRequested()
                 && !testingEnabled){
             robot.liftMovement(robot.LIFT_SPEED, false);
         }
+        // wait till func return something
+        while(!mineralPosition.isDone()){
+            telemetry.addLine("Still looking..");
+        }
+        telemetry.update();
 
-        robot.liftMovement(0, false);
-        telemetry.clear();
 
-        robot.setDrivetrainPosition(-300, "translation", 1);
-
-        robot.setDrivetrainPosition(1500, "strafing", .5);
-
-        robot.absgyroRotation(-45, "absolute");
-
-        robot.setDrivetrainPosition(-1500, "strafing", .5);
-
-        robot.setDrivetrainPosition(-1600, "translation", 1);
-
-        robot.absgyroRotation(0, "absolute");
-
-        robot.setDrivetrainPosition(400, "translation", 1);
+        try {
+            telemetry.addLine("mineral position:" + mineralPosition.get());
+            executorService.shutdown();
+        } catch (ExecutionException e){
+            telemetry.addLine("Something went wrong: " + e.toString());
+        }
 
 
     }
