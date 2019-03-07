@@ -117,48 +117,6 @@ public class Autonom extends LinearOpMode {
 
         stop();
 
-
-
-            //mitza finish
-
-//        while(robot.leftDistanceSensor.getDistance(DistanceUnit.CM) > 15 && !isStopRequested()){
-//            if(robot.leftDistanceSensor.getDistance(DistanceUnit.CM) < 50 && !isClose) {
-//                isClose = true;
-//            }
-//            if(isClose){
-//                robot.mecanumMovement(0, velocity, 0);
-//                velocity -= .03;
-//            } else {
-//                robot.mecanumMovement(0, velocity, 0);
-//            }
-//            telemetry.addLine("Distance from sensor: " + robot.leftDistanceSensor.getDistance(DistanceUnit.CM));
-//            if(velocity < 0)
-//                break;
-//        }
-//        telemetry.update();
-//        robot.mecanumMovement(0, 0, 0);
-//
-//        while(opModeIsActive()){
-//
-//        }
-//
-//        robot.gyroRotationWIP(90, "absolute", "Crater");
-//
-//        while(robot.leftDistanceSensor.getDistance(DistanceUnit.CM) > 40 && !isStopRequested()){
-//            robot.mecanumMovement(0, 1, 0);
-//        }
-//
-//        robot.mecanumMovement(0, 0, 0);
-//        telemetry.clear();
-//
-//        double time = runtime.seconds();
-//        while(opModeIsActive()){
-//            telemetry.addLine("Seconds: " + time);
-//            telemetry.addLine("Placing totem");
-//            telemetry.update();
-//        }
-//
-//        stop();
     }
 
     private Future<int[]> getMineralAsync() {
@@ -260,7 +218,7 @@ public class Autonom extends LinearOpMode {
             }
         }
 
-        if(goldMineralPosition == -1){
+        if(goldMineralPosition == -1 || true){
             attemptSampleFromGround(mineralPosition); // aia daca nu merge bine principala ;)
         } else {
             int distanceToTravel;
@@ -284,6 +242,8 @@ public class Autonom extends LinearOpMode {
     }
 
     private void attemptSampleFromGround(int[] mineralPosition) {
+
+        new AutonomCrater_V2(robot).samplingStuff(mineralPosition);
 
     }
 

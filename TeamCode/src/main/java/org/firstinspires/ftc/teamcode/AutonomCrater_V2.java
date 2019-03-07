@@ -54,6 +54,10 @@ public class AutonomCrater_V2 extends LinearOpMode {
         ElapsedTime mineralRetrievalTimer = new ElapsedTime();
         ElapsedTime errorTimer = new ElapsedTime();
 
+        public AutonomCrater_V2(Robot robot){
+            this.robot = robot;
+        }
+
         @Override
         public void runOpMode () throws InterruptedException {
             initStuff();
