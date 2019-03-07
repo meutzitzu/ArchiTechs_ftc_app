@@ -33,6 +33,8 @@ public class TeleOpMode extends LinearOpMode {
     boolean liftOverwitting = false;
     int testAngle = 45;
 
+    boolean gyroXYFirst = true;
+
     int newMaxRotation = -420;
 
     @Override
@@ -250,7 +252,6 @@ public class TeleOpMode extends LinearOpMode {
             if(!grabberMoving){
                 robot.mechGrab.setPower(0);
             }
-            telemetry.addData("mechGRab", robot.mechGrab.getPower());
 
 
             //stopper servo
@@ -281,10 +282,14 @@ public class TeleOpMode extends LinearOpMode {
 
 
 
-            telemetry.addData("Left lift", robot.mechLiftLeft.getCurrentPosition());
-            telemetry.addData("Right lift", robot.mechLiftRight.getCurrentPosition());
+            if(robot.gyroXYAxisDisplacement()){
+                telemetry.addLine("Unusual displacement");
+                robot.setDrivetrainPosition(-1000, "translation", 0.7);
+            }
+            else{
+                telemetry.addLine("All ok");
+            }
 
-            telemetry.update();
 
         }
     }

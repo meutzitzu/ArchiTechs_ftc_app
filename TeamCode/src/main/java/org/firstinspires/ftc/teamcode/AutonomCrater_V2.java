@@ -34,12 +34,12 @@ public class AutonomCrater_V2 extends LinearOpMode {
 
         boolean goldMineral = false;
         boolean samplingFailure = false;
-        boolean autonomonTesting = false;
+        boolean autonomonTesting = true;
         boolean tensorFlowSafetyNotInitialized = false;
 
         int goldMineralPosition = -1; //can be 1, 2, 3
         int leftPosition = 350, midPosition = 315, rightPosition = 280;
-        int firstRecognition = 335, secondRecognition = 300;
+        int firstRecognition = 340, secondRecognition = 300;
         int lateralDistance = -3500; //-3200
         int midDistance = -2900; //-2500
         int hittingMineralDistance = 0;
@@ -337,8 +337,18 @@ public class AutonomCrater_V2 extends LinearOpMode {
                 }
             }
 
-
+            telemetry.addData("1", mineralSequence[1]);
+            telemetry.addData("2", mineralSequence[2]);
+            telemetry.addData("3", mineralSequence[3]);
+            telemetry.addData("P", extremecoordinatesMinerals[0][1] + " " + extremecoordinatesMinerals[0][2] +" " + extremecoordinatesMinerals[0][3]);
+            telemetry.addData("X", extremecoordinatesMinerals[1][1] + " " + extremecoordinatesMinerals[1][2] +" " + extremecoordinatesMinerals[1][3]);
+            telemetry.addData("Vu", extremecoordinatesMinerals[2][1] + " " + extremecoordinatesMinerals[2][2] +" " + extremecoordinatesMinerals[2][3]);
+            telemetry.addData("Pos", extremecoordinatesMinerals[3][1] + " " + extremecoordinatesMinerals[3][2] +" " + extremecoordinatesMinerals[3][3]);
             telemetry.update();
+
+            while(opModeIsActive()){
+
+            }
 
 
 //            for(int i = 1; i <= 3; i++){

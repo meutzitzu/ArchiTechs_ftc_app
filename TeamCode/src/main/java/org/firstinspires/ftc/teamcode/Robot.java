@@ -13,6 +13,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.cos;
@@ -644,6 +646,55 @@ public class Robot {
             }
 
             return  result;
+        }
+
+            double xRawSum = 0, xFilteredValue = 0;
+            double yRawSum = 0, yFilteredValue = 0;
+            int counter=0;
+            ElapsedTime timeInterval = new ElapsedTime();
+
+        public boolean gyroXYAxisDisplacement(){
+            double xRawValue;
+            double yRawValue;
+
+            AngularVelocity rates = gyro.getAngularVelocity(AngleUnit.DEGREES);
+
+            xRawValue = rates.xRotationRate;
+            yRawValue = rates.yRotationRate;
+
+//            if(timeInterval.milliseconds() < 70){
+//                counter++;
+//                xRawSum += xRawValue;
+//                yRawSum += yRawValue;
+//            }
+//            else{
+//                xFilteredValue = xRawSum / counter;
+//                yFilteredValue = yRawSum / counter;
+//                counter = 0;
+//                xRawSum = 0;
+//                yRawSum = 0;
+//
+//                timeInterval.reset();
+//
+//                telemetry.addData("filtered", xFilteredValue);
+//                telemetry.addData("raw", xRawValue);
+//                telemetry.addData("counter", counter);
+//                telemetry.addData("xSum", xRawSum);
+//                telemetry.update();
+//            }
+
+
+
+            telemetry.addData("rawx", xRawValue);
+            telemetry.addData("rawy", yRawValue);
+            telemetry.update();
+
+            if(xRawValue > 10 || yRawValue > 10){
+                return true;
+            }
+            else{
+                return false;
+            }
         }
 
 }
