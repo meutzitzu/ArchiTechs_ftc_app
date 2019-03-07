@@ -174,6 +174,7 @@ public class Robot {
             Almost all movement actions
          */
 
+
         public double useBrake(double initialSpeed, double brakeFactor, boolean isCRServo){
 
             int speedSign = (int)(initialSpeed / abs(initialSpeed));
@@ -237,6 +238,9 @@ public class Robot {
             driveFrontRight.setPower(FrontRightPower);
             driveRearLeft.setPower(RearLeftPower);
             driveRearRight.setPower(RearRightPower);
+
+//            telemetry.addData("ticks",driveRearLeft.getCurrentPosition());
+//            telemetry.update();
         }
 
 
@@ -570,14 +574,12 @@ public class Robot {
         }
 
 
+
         public void gyroRotationWIP(int desiredTheta, String rotationType, String side){
             int initialTheta, currentTheta;
             int error;
             double outSpeed;
             double proportionalConstant = 0.027;
-
-            this.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
             if(side.equals("Crater")){
                 desiredTheta = desiredTheta - 45;
             }
@@ -635,21 +637,15 @@ public class Robot {
 
 
         }
-
         public int mathModulo(int numberToBeModuloed, int n){
             int result = numberToBeModuloed % n;
 
-            if(numberToBeModuloed < 0){
-                numberToBeModuloed += 360;
+            if(result < 0){
+                result += 360;
             }
 
             return  result;
         }
-
-            double xRawSum = 0, xFilteredValue = 0;
-            double yRawSum = 0, yFilteredValue = 0;
-            int counter=0;
-            ElapsedTime timeInterval = new ElapsedTime();
 
         public boolean gyroXYAxisDisplacement(){
             double xRawValue;
@@ -693,6 +689,6 @@ public class Robot {
             else{
                 return false;
             }
-        }
 
+        }
 }

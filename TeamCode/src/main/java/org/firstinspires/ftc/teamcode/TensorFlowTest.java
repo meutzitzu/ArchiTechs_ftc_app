@@ -175,7 +175,8 @@ public class TensorFlowTest extends LinearOpMode {
             robot.mecanumGlobalCoordinatesDriving(robot.useBrake(mecanumX, brakeFactor, false),
                     robot.useBrake(mecanumY, brakeFactor, false),
                     robot.useBrake(turn, brakeFactor, false),
-                    robot.globalGyroValue("ad"));
+            robot.globalGyroValue("ad"));
+
         }
         else if(drivingMode == "Local"){
             robot.mecanumMovement(robot.useBrake(mecanumX, brakeFactor, false),
