@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
@@ -11,6 +12,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.*;
@@ -54,63 +56,119 @@ public class Autonom extends LinearOpMode {
         waitForStart();
 
         runtime.reset();
-
+//
+//        testDeploy();
+//        stop();
         deployRobot();
 
         navigateToDeploy();
 
     }
 
+    private double distWallLeft(){
+        double distL = robot.leftDistanceSensor.getDistance(DistanceUnit.CM);
+        distL= Math.sqrt(2)*distL/2;
+        return distL;
+    }
+
+    private double distWallRight(){
+        double distR = robot.rightDistanceSensor.getDistance(DistanceUnit.CM);
+        distR= Math.sqrt(2)*distR/2;
+        return distR;
+    }
+
+
+
     private void navigateToDeploy() {
 
         robot.gyroRotationWIP(45, "absolute", "Crater");
         double velocity = 1;
         boolean isClose = false;
-        robot.mecanumMovement(0, 1, 0);
-        while(robot.leftDistanceSensor.getDistance(DistanceUnit.CM) > 15 && !isStopRequested()){
-            if(robot.leftDistanceSensor.getDistance(DistanceUnit.CM) < 50 && !isClose) {
-                isClose = true;
-            }
-            if(isClose){
-                robot.mecanumMovement(0, velocity, 0);
-                velocity -= .03;
-            } else {
-                robot.mecanumMovement(0, velocity, 0);
-            }
-            telemetry.addLine("Distance from sensor: " + robot.leftDistanceSensor.getDistance(DistanceUnit.CM));
-            if(velocity < 0)
-                break;
-        }
-        telemetry.update();
-        robot.mecanumMovement(0, 0, 0);
 
-        while(opModeIsActive()){
 
+        ///mitza start
+
+        while(distWallLeft()>5&&distWallRight()>10) {
+            robot.mecanumMovement(0, 1, 0);
+            if (distWallLeft()<15||distWallRight()<30)
+                robot.mecanumMovement(0, 0.3, 0);
+            if(distWallLeft()<6||distWallRight()<12){
+                robot.mecanumMovement(0, 0, 0);
+            }
         }
 
         robot.gyroRotationWIP(90, "absolute", "Crater");
 
-        while(robot.leftDistanceSensor.getDistance(DistanceUnit.CM) > 40 && !isStopRequested()){
-            robot.mecanumMovement(0, 1, 0);
+        while (robot.leftDistanceSensor.getDistance(DistanceUnit.CM)>55) {
+            robot.mecanumMovement(0, 0.5, 0);
         }
 
-        robot.mecanumMovement(0, 0, 0);
-        telemetry.clear();
+        if(robot.leftDistanceSensor.getDistance(DistanceUnit.CM)<58) {
+            robot.mecanumMovement(0,0,0);
+            robot.mechGrab.setPower(-0.4);
+            ElapsedTime time = new ElapsedTime();
+            while(time.seconds()<1.5) {
 
-        double time = runtime.seconds();
-        while(opModeIsActive()){
-            telemetry.addLine("Seconds: " + time);
-            telemetry.addLine("Placing totem");
-            telemetry.update();
+            }
+            robot.mechGrab.setPower(0);
         }
+
+        robot.setDrivetrainPosition(7000,"translation",1);
+        robot.mechRotation.setPower(1);
+
 
         stop();
+
+
+
+            //mitza finish
+
+//        while(robot.leftDistanceSensor.getDistance(DistanceUnit.CM) > 15 && !isStopRequested()){
+//            if(robot.leftDistanceSensor.getDistance(DistanceUnit.CM) < 50 && !isClose) {
+//                isClose = true;
+//            }
+//            if(isClose){
+//                robot.mecanumMovement(0, velocity, 0);
+//                velocity -= .03;
+//            } else {
+//                robot.mecanumMovement(0, velocity, 0);
+//            }
+//            telemetry.addLine("Distance from sensor: " + robot.leftDistanceSensor.getDistance(DistanceUnit.CM));
+//            if(velocity < 0)
+//                break;
+//        }
+//        telemetry.update();
+//        robot.mecanumMovement(0, 0, 0);
+//
+//        while(opModeIsActive()){
+//
+//        }
+//
+//        robot.gyroRotationWIP(90, "absolute", "Crater");
+//
+//        while(robot.leftDistanceSensor.getDistance(DistanceUnit.CM) > 40 && !isStopRequested()){
+//            robot.mecanumMovement(0, 1, 0);
+//        }
+//
+//        robot.mecanumMovement(0, 0, 0);
+//        telemetry.clear();
+//
+//        double time = runtime.seconds();
+//        while(opModeIsActive()){
+//            telemetry.addLine("Seconds: " + time);
+//            telemetry.addLine("Placing totem");
+//            telemetry.update();
+//        }
+//
+//        stop();
     }
 
-    private Future<Integer> getMineralAsync() throws InterruptedException {
-        return executorService.submit(new Callable<Integer>() {
+    private Future<int[]> getMineralAsync() {
+        return executorService.submit(new Callable<int[]>() {
             @Override
-            public Integer call() throws Exception {
+            public int[] call() {
+
+                int[] minerals = new int[]{0, 0, 0, 0};
 
                 boolean foundMineral = false;
                 int mineralPosition = -1;
@@ -136,18 +194,35 @@ public class Autonom extends LinearOpMode {
                                 silverMineral2X = updatedRecognitions.get(i).getLeft();
                             }
                         }
-
                         if(goldMineralX == -1)
-                            mineralPosition = 3;
+                            minerals[3] = 2;
                         else if(goldMineralX < silverMineral1X){
-                            mineralPosition = 1;
+                            minerals[1] = 2;
                         } else {
-                            mineralPosition = 2;
+                            minerals[2] = 2;
                         }
+                    } else if(updatedRecognitions != null && updatedRecognitions.size() == 1 && time.seconds() > 7.5){
+                        telemetry.addLine("seconds passed: " + time.seconds());
+                        telemetry.update();
+                        float goldMineralX = -1;
+                        float silverMineralX = -1;
+                        if(updatedRecognitions.get(0).getLabel().equals(LABEL_GOLD_MINERAL)){
+                            goldMineralX = updatedRecognitions.get(0).getLeft();
+                        } else {
+                            silverMineralX = updatedRecognitions.get(0).getLeft();
+                        }
+
+                        if(goldMineralX != -1 && goldMineralX < 300){
+                            minerals[1] = 2;
+                        } else if(goldMineralX != -1 && goldMineralX > 300){
+                            minerals[2] = 2;
+                        } else if(silverMineralX != -1 && silverMineralX > 300){
+                            minerals[2] = 1;
+                        } else if(silverMineralX != -1 && silverMineralX < 300)
+                            minerals[1] = 2;
                     }
                 }
-                tfod.shutdown();
-                return mineralPosition;
+                return minerals;
             }
 
         });
@@ -155,8 +230,7 @@ public class Autonom extends LinearOpMode {
     }
 
     private void deployRobot() throws InterruptedException {
-
-        Future<Integer> mineralPosition = getMineralAsync();
+        Future<int[]> mineralPosition = getMineralAsync();
         while(robot.mechLiftLeft.getCurrentPosition() < robot.MAX_LIFT_POSITION &&
                 robot.mechLiftRight.getCurrentPosition() < robot.MAX_LIFT_POSITION && !isStopRequested()
                 && !testingEnabled){
@@ -164,14 +238,6 @@ public class Autonom extends LinearOpMode {
         }
 
         robot.liftMovement(0, false);
-
-        // wait till func return something
-        while(!mineralPosition.isDone()){
-            telemetry.addLine("Still looking...");
-            telemetry.update();
-        }
-        telemetry.update();
-
 
         robot.setDrivetrainPosition(-500, "translation", 1);
         robot.setDrivetrainPosition(1500, "strafing", .6);
@@ -188,26 +254,39 @@ public class Autonom extends LinearOpMode {
 
     }
 
-    private void sampleMineral(int mineralPosition) {
-        telemetry.addLine("mineral position: " + mineralPosition);
-        telemetry.update();
-        int distanceToTravel;
-        switch (mineralPosition){
-            case 1: robot.gyroRotationWIP(0, "absolute", "Crater");
-                    distanceToTravel = -2700;
-                    break;
-            case 2: robot.gyroRotationWIP(315, "absolute", "Crater");
-                    distanceToTravel = -2200;
-                    break;
-            case 3: robot.gyroRotationWIP(270, "absolute", "Crater");
-                    distanceToTravel = -2700;
-                    break;
-            default: distanceToTravel = 0;
+    private void sampleMineral(int[] mineralPosition) {
+        int goldMineralPosition = -1;
+        for(int index = 1; index <= 3; index++){
+            if(mineralPosition[index] == 2){
+                goldMineralPosition = index;
+            }
         }
 
-        robot.setDrivetrainPosition(distanceToTravel, "translation", 1);
+        if(goldMineralPosition == -1){
+            attemptSampleFromGround(mineralPosition); // aia daca nu merge bine principala ;)
+        } else {
+            int distanceToTravel;
+            switch (goldMineralPosition){
+                case 1: robot.gyroRotationWIP(0, "absolute", "Crater");
+                    distanceToTravel = -2700;
+                    break;
+                case 2: robot.gyroRotationWIP(315, "absolute", "Crater");
+                    distanceToTravel = -2200;
+                    break;
+                case 3: robot.gyroRotationWIP(270, "absolute", "Crater");
+                    distanceToTravel = -2700;
+                    break;
+                default: distanceToTravel = 0;
+            }
 
-        robot.setDrivetrainPosition((-distanceToTravel) / 10 * 7, "translation", 1);
+            robot.setDrivetrainPosition(distanceToTravel, "translation", 1);
+
+            robot.setDrivetrainPosition((-distanceToTravel) / 10 * 7, "translation", 1);
+        }
+    }
+
+    private void attemptSampleFromGround(int[] mineralPosition) {
+
     }
 
     private void initStuff() throws InterruptedException{
@@ -227,28 +306,21 @@ public class Autonom extends LinearOpMode {
     }
 
     private void initVuforia() {
-        /*
-         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
-         */
+
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
         parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
 
-        //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
 
-        // Loading trackables is not necessary for the Tensor Flow Object Detection engine.
     }
 
-    /**
-     * Initialize the Tensor Flow Object Detection engine.
-     */
     private void initTfod() {
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
                 "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-        tfodParameters.minimumConfidence = .75;
+        tfodParameters.minimumConfidence = .85;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
     }

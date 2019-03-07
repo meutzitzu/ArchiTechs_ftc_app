@@ -38,12 +38,20 @@ public class TeleOpMode extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         robot.init(hardwareMap, true, telemetry, this);
 
+
+
         waitForStart();
         runtime.reset();
         drivingModeSwitchTimer.reset();
         stopperTimer.reset();
 
         while(opModeIsActive()){
+
+            //test distance
+
+
+            //end test
+
 
             //driving mode choice
             if(gamepad1.x && (1==0)){

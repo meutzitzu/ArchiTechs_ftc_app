@@ -175,6 +175,7 @@ public class Robot {
             Almost all movement actions
          */
 
+
         public double useBrake(double initialSpeed, double brakeFactor, boolean isCRServo){
 
             int speedSign = (int)(initialSpeed / abs(initialSpeed));
@@ -238,6 +239,9 @@ public class Robot {
             driveFrontRight.setPower(FrontRightPower);
             driveRearLeft.setPower(RearLeftPower);
             driveRearRight.setPower(RearRightPower);
+
+//            telemetry.addData("ticks",driveRearLeft.getCurrentPosition());
+//            telemetry.update();
         }
 
 
