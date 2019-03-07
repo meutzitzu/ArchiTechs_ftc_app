@@ -41,13 +41,6 @@ public class AutonomCrater_V2 extends LinearOpMode {
         boolean autonomonTesting = true;
         boolean tensorFlowSafetyNotInitialized = false;
 
-        int goldMineralPosition = -1; //can be 1, 2, 3
-        int leftPosition = 350, midPosition = 315, rightPosition = 280;
-        int firstRecognition = 45, secondRecognition = 30;
-        int lateralDistance = -3500; //-3200
-        int midDistance = -2900; //-2500
-        int hittingMineralDistance = 0;
-
 
         Robot robot = new Robot();
         ElapsedTime runtime = new ElapsedTime();
@@ -60,100 +53,92 @@ public class AutonomCrater_V2 extends LinearOpMode {
 
         @Override
         public void runOpMode () throws InterruptedException {
-            initStuff();
-
-            waitForStart();
-
-            deployRobot();
 
             samplingStuff(new int[]{0, 0, 0, 0});
 
-            toyPlacingfStuff();
-
-            parkingMethod();
 
         }
 
 
             /** TensorFlow inits*/
-        void initStuff() throws InterruptedException {
-            robot.init(hardwareMap, false, telemetry, this);
-
-            robot.mechLiftRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.mechLiftLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-            robot.mechLiftRight.setPower(0);
-            robot.mechLiftRight.setPower(0);
-
-            robot.mechLiftRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            robot.mechLiftLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-            initVuforia();
-            initTfod();
-            initSafeties();
-        }
-
-        void initVuforia() {
-        /*
-         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
-         */
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-
-        parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
-
-        //  Instantiate the Vuforia engine
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
-
-        // Loading trackables is not necessary for the Tensor Flow Object Detection engine.
-
-            if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
-                initTfod();
-                tensorFlowSafetyNotInitialized = false;
-            } else {
-                tensorFlowSafetyNotInitialized = true;
-            }
-        }
-
-        void initTfod() {
-            int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-            TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-            tfodParameters.minimumConfidence = .8;
-            tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-            tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
-        }
-
-            /**After init seafeties
-            *  Alerts if something is not ok
-            */
-        void initSafeties(){
-            gyroSafety();
-            tensorFlowSafety();
-
-            telemetry.addLine("Init finalized successfully");
-            telemetry.update();
-        }
-
-        void gyroSafety(){
-            //not sure how to implement it
-        }
-
-        void tensorFlowSafety(){
-            if(!tensorFlowSafetyNotInitialized){
-                telemetry.addLine("TensorFlow is ok");
-            }
-            else{
-
-                errorTimer.reset();
-                while(errorTimer.seconds() <= 5){
-                    telemetry.addLine("Something went wrong with Tensor flow");
-                    telemetry.update();
-                }
-
-                stop();
-            }
-        }
+//        void initStuff() throws InterruptedException {
+//            robot.init(hardwareMap, false, telemetry, this);
+//
+//            robot.mechLiftRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//            robot.mechLiftLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//
+//            robot.mechLiftRight.setPower(0);
+//            robot.mechLiftRight.setPower(0);
+//
+//            robot.mechLiftRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//            robot.mechLiftLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//
+//            initVuforia();
+//            initTfod();
+//            initSafeties();
+//        }
+//
+//        void initVuforia() {
+//        /*
+//         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
+//         */
+//        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+//
+//        parameters.vuforiaLicenseKey = VUFORIA_KEY;
+//        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
+//
+//        //  Instantiate the Vuforia engine
+//        vuforia = ClassFactory.getInstance().createVuforia(parameters);
+//
+//        // Loading trackables is not necessary for the Tensor Flow Object Detection engine.
+//
+//            if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
+//                initTfod();
+//                tensorFlowSafetyNotInitialized = false;
+//            } else {
+//                tensorFlowSafetyNotInitialized = true;
+//            }
+//        }
+//
+//        void initTfod() {
+//            int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+//                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+//            TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+//            tfodParameters.minimumConfidence = .8;
+//            tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+//            tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
+//        }
+//
+//            /**After init seafeties
+//            *  Alerts if something is not ok
+//            */
+//        void initSafeties(){
+//            gyroSafety();
+//            tensorFlowSafety();
+//
+//            telemetry.addLine("Init finalized successfully");
+//            telemetry.update();
+//        }
+//
+//        void gyroSafety(){
+//            //not sure how to implement it
+//        }
+//
+//        void tensorFlowSafety(){
+//            if(!tensorFlowSafetyNotInitialized){
+//                telemetry.addLine("TensorFlow is ok");
+//            }
+//            else{
+//
+//                errorTimer.reset();
+//                while(errorTimer.seconds() <= 5){
+//                    telemetry.addLine("Something went wrong with Tensor flow");
+//                    telemetry.update();
+//                }
+//
+//                stop();
+//            }
+//        }
 
             /** Robot going down
             *  Separating frm the lander to begin recognition */
@@ -161,24 +146,24 @@ public class AutonomCrater_V2 extends LinearOpMode {
 
             //Robot going down
             //Can be omitted if for test purposes
-            if(!autonomonTesting) {
-                while (robot.mechLiftLeft.getCurrentPosition() < robot.MAX_LIFT_POSITION &&
-                        robot.mechLiftRight.getCurrentPosition() < robot.MAX_LIFT_POSITION && !isStopRequested()) {
-                    robot.liftMovement(robot.LIFT_SPEED, false);
-                }
-                telemetry.addData("Lift Position", robot.mechLiftLeft.getCurrentPosition());
-            }
-            else{
-                telemetry.addLine("Tesint mode, without lift");
-            }
-            robot.liftMovement(0, false);
-            telemetry.update();
+//            if(!autonomonTesting) {
+//                while (robot.mechLiftLeft.getCurrentPosition() < robot.MAX_LIFT_POSITION &&
+//                        robot.mechLiftRight.getCurrentPosition() < robot.MAX_LIFT_POSITION && !isStopRequested()) {
+//                    robot.liftMovement(robot.LIFT_SPEED, false);
+//                }
+//                telemetry.addData("Lift Position", robot.mechLiftLeft.getCurrentPosition());
+//            }
+//            else{
+//                telemetry.addLine("Tesint mode, without lift");
+//            }
+//            robot.liftMovement(0, false);
+//            telemetry.update();
 
 
             //tensor activation
-            if (tfod != null) {
-                tfod.activate();
-            }
+//            if (tfod != null) {
+//                tfod.activate();
+//            }
 
             //moving to get in position for TensorFlow scan
 
@@ -196,6 +181,7 @@ public class AutonomCrater_V2 extends LinearOpMode {
 
             /** TensorFlow here*/
         void samplingStuff(int[] mineralSequence){
+            deployRobot();
             tensorDetection(mineralSequence);
             mineralDisplacement(mineralSequence);
         }
@@ -203,16 +189,23 @@ public class AutonomCrater_V2 extends LinearOpMode {
         void tensorDetection(int[] mineralSequence) {
 
             int goldMineralX; //x coordinate of the
-            int goldMineralPosition = -1; //can be 1, 2, 3
-            int silverMineralX = -1;
-            // 1->silver mineral
+            int silverMineralX; //x coordinate of silver mineral
             int[][] extremecoordinatesMinerals = new int[][]{{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {-1, -1, -1, -1}};
             int mineralSum = 0; // sum of the first 3 elements of the array
-            int recognitionPosition = 2;
-            int k = 0;
+            int recognitionPosition;
             boolean goldMineral = false;
-            boolean newSphere = true;
+            boolean newSphere;
             int sphereTruePosition, robotSphereAngle, sphereVuAngle;
+            int firstRecognition = 45, secondRecognition = 30;
+
+
+            if(mineralSequence[1] == 0){
+                recognitionPosition = 2;
+            }
+            else{
+                recognitionPosition = 1;
+            }
+
 
             telemetry.clear();
             while (!isStopRequested() && mineralSum < 2 && tfod != null) {
@@ -367,6 +360,13 @@ public class AutonomCrater_V2 extends LinearOpMode {
         }
         void mineralDisplacement(int[] mineralSequence){
 
+            int goldMineralPosition = -1; //can be 1, 2, 3
+
+            int lateralDistance = -3500; //-3200
+            int midDistance = -2900; //-2500
+            int hittingMineralDistance;
+            int leftPosition = 350, midPosition = 315, rightPosition = 280;
+
             for(int i = 1; i <= 3; i++){
                 if(mineralSequence[i] == 2){
                     goldMineralPosition = i;
@@ -414,7 +414,7 @@ public class AutonomCrater_V2 extends LinearOpMode {
 
         void gettingBackToInitial(){
             //getting back to what position we want before going in to place the team marker
-            robot.setDrivetrainPosition(-hittingMineralDistance, "translation", 1.0);
+//            robot.setDrivetrainPosition(-hittingMineralDistance, "translation", 1.0);
         }
         void nearingTheWallBefore(){
             //parralel to the lander -> not hitting other minerals and knowing an approximate robot position

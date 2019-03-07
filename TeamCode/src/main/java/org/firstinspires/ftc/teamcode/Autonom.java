@@ -218,7 +218,7 @@ public class Autonom extends LinearOpMode {
             }
         }
 
-        if(goldMineralPosition == -1 || true){
+        if(goldMineralPosition == -1){
             attemptSampleFromGround(mineralPosition); // aia daca nu merge bine principala ;)
         } else {
             int distanceToTravel;
