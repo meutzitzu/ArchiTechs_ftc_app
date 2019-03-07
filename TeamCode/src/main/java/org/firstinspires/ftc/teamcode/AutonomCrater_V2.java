@@ -11,6 +11,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Autonomous(name="Autonom Crater v2", group="Linear OpMode")
@@ -39,12 +41,11 @@ public class AutonomCrater_V2 extends LinearOpMode {
 
         int goldMineralPosition = -1; //can be 1, 2, 3
         int leftPosition = 350, midPosition = 315, rightPosition = 280;
-        int firstRecognition = 340, secondRecognition = 300;
+        int firstRecognition = 45, secondRecognition = 30;
         int lateralDistance = -3500; //-3200
         int midDistance = -2900; //-2500
         int hittingMineralDistance = 0;
 
-        int[] mineralSequence = new int[]{0, 0, 0, 0}; // 2->gold mineral
 
         Robot robot = new Robot();
         ElapsedTime runtime = new ElapsedTime();
@@ -59,7 +60,7 @@ public class AutonomCrater_V2 extends LinearOpMode {
 
             deployRobot();
 
-            samplingStuff();
+            samplingStuff(new int[]{0, 0, 0, 0});
 
             toyPlacingfStuff();
 
@@ -188,12 +189,12 @@ public class AutonomCrater_V2 extends LinearOpMode {
 
 
             /** TensorFlow here*/
-        void samplingStuff(){
-            tensorDetection();
-            mineralDisplacement();
+        void samplingStuff(int[] mineralSequence){
+            tensorDetection(mineralSequence);
+            mineralDisplacement(mineralSequence);
         }
 
-        void tensorDetection() {
+        void tensorDetection(int[] mineralSequence) {
 
             int goldMineralX; //x coordinate of the
             int goldMineralPosition = -1; //can be 1, 2, 3
@@ -358,7 +359,7 @@ public class AutonomCrater_V2 extends LinearOpMode {
 //            }
 
         }
-        void mineralDisplacement(){
+        void mineralDisplacement(int[] mineralSequence){
 
             for(int i = 1; i <= 3; i++){
                 if(mineralSequence[i] == 2){

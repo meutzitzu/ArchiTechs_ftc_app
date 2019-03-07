@@ -633,8 +633,6 @@ public class Robot {
 
             this.mecanumMovement(0,0,0);
 
-            telemetry.addLine("Rotation over");
-            telemetry.update();
 
         }
 
