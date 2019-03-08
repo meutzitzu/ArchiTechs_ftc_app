@@ -125,7 +125,7 @@ public class Robot {
 
             modernRoboticsI2cGyro.calibrate();
 
-            while (modernRoboticsI2cGyro.isCalibrating())  {
+            while (modernRoboticsI2cGyro.isCalibrating() && !opMode.isStopRequested())  {
                 telemetry.addData("gyro", "calib");
                 telemetry.update();
                 sleep(50);
@@ -486,7 +486,6 @@ public class Robot {
                 //this while is waiting for the wheels to get in position
             }
 
-
         }
 
         //rotationType  -->relative or absolute
@@ -568,7 +567,7 @@ public class Robot {
 
         public int VutoDegrees(int VuX){
 
-            double degrees = -(25 / 270.0) * VuX + 25;
+            double degrees = -(25 / 270.0) * VuX + 25 - 5;
 
             return (int) degrees;
         }
@@ -580,14 +579,20 @@ public class Robot {
             int error;
             double outSpeed;
             double proportionalConstant = 0.027;
-            if(side.equals("Crater")){
-                desiredTheta = desiredTheta - 45;
-            }
-            else if(side.equals("Deploy")){
-                desiredTheta = desiredTheta - 135;
-            }
 
             initialTheta = mathModulo(modernRoboticsI2cGyro.getIntegratedZValue(),360);
+
+            if(rotationType.equals("absolute")) {
+                if (side.equals("Crater")) {
+                    desiredTheta = desiredTheta - 45;
+                } else if (side.equals("Deploy")) {
+                    desiredTheta = desiredTheta - 135;
+                }
+            }
+            else if(rotationType.equals("relative")){
+                desiredTheta = initialTheta + desiredTheta;
+            }
+
 
             desiredTheta = mathModulo(desiredTheta, 360);
 
