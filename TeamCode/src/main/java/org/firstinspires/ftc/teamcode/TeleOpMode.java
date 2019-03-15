@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @TeleOp(name="OpMode", group="Linear OpMode")
@@ -32,6 +34,7 @@ public class TeleOpMode extends LinearOpMode {
     boolean stopperOpen = false;
     boolean liftOverwitting = false;
     int testAngle = 45;
+    int rawX, rawY, rawZ;
 
     boolean gyroXYFirst = true;
 
@@ -47,6 +50,8 @@ public class TeleOpMode extends LinearOpMode {
         runtime.reset();
         drivingModeSwitchTimer.reset();
         stopperTimer.reset();
+
+        telemetry.clear();
 
         while(opModeIsActive()){
 
@@ -186,6 +191,14 @@ public class TeleOpMode extends LinearOpMode {
                 robot.liftMovement(0, false);
             }
 
+            if(gamepad2.dpad_up) {
+                robot.setDriveTrainPostionDIY(1000, "translation", 1);
+            } else if(gamepad2.dpad_left){
+                robot.setDriveTrainPostionDIY(1000, "strafing", 1);
+            } else if (gamepad2.dpad_right){
+                robot.setDriveTrainPostionDIY(1000, "rotation", 1);
+            }
+
 
 
             //patching for arm movement
@@ -205,7 +218,7 @@ public class TeleOpMode extends LinearOpMode {
 
 
             //Rotation of the main arm
-            /*
+
             if (gamepad1.dpad_up) {
                 robot.rotationMovementWIP(true, brakeFactor);
             } else if (gamepad1.dpad_down) {
@@ -223,7 +236,7 @@ public class TeleOpMode extends LinearOpMode {
                     robot.mechRotation.setPower(0);
                 }
             }
-            */
+
 
             //rotation movement
 
@@ -279,26 +292,37 @@ public class TeleOpMode extends LinearOpMode {
                 testAngle = 0;
             }
             if(gamepad2.dpad_down){
-                testAngle = 180;
+                testAngle = 45;
             }
             if(gamepad2.dpad_right){
-                testAngle = 270;
-            }
-            if(gamepad2.dpad_left){
                 testAngle = 90;
             }
-
-
-
-            if(robot.gyroXYAxisDisplacement()){
-                telemetry.addLine("Unusual displacement");
-                robot.setDrivetrainPosition(-1000, "translation", 0.7);
-            }
-            else{
-                telemetry.addLine("All ok");
+            if(gamepad2.dpad_left){
+                testAngle = 30;
             }
 
 
+            rawX = robot.modernRoboticsI2cGyro.rawX();
+            rawY = robot.modernRoboticsI2cGyro.rawY();
+            rawZ = robot.modernRoboticsI2cGyro.rawZ();
+
+            AngularVelocity rates = robot.gyro.getAngularVelocity(AngleUnit.DEGREES);
+
+            telemetry.addLine()
+                    .addData("dx", formatRate(rates.xRotationRate))
+                    .addData("dy", formatRate(rates.yRotationRate))
+                    .addData("dz", "%s deg/s", formatRate(rates.zRotationRate));
         }
+
+            telemetry.update();
+
     }
+
+
+    String formatRate(float rate) {
+        return String.format("%.3f", rate);
+    }
+
+
+
 }

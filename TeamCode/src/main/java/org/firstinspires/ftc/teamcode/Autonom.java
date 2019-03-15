@@ -59,7 +59,9 @@ public class Autonom extends LinearOpMode {
 
         deployRobot();
 
-        navigateToDeploy();
+        //navigateToDeploy();
+
+        new AutonomCrater_V2(robot, null).gettingInLanderPosition();
 
     }
 
@@ -251,6 +253,10 @@ public class Autonom extends LinearOpMode {
     private void sampleMineral(int[] mineralPosition) {
         int goldMineralPosition = -1;
 
+//        mineralPosition[1] = 0;
+//        mineralPosition[2] = 0;
+//        mineralPosition[3] = 0;
+
         for(int index = 1; index <= 3; index++){
             if(mineralPosition[index] == 2){
                 goldMineralPosition = index;
@@ -259,18 +265,19 @@ public class Autonom extends LinearOpMode {
 
         if(goldMineralPosition == -1){
             mineralPosition = new int[] {0, 0, 0, 0};
+            telemetry.clear();
             attemptSampleFromGround(mineralPosition); // aia daca nu merge bine principala ;)
         } else {
             int distanceToTravel;
             switch (goldMineralPosition){
-                case 1: robot.gyroRotationWIP(10, "absolute", "Crater");
-                    distanceToTravel = -3500;
+                case 1: robot.gyroRotationWIP(350, "absolute", "Crater");
+                    distanceToTravel = -3300;
                     break;
                 case 2: robot.gyroRotationWIP(315, "absolute", "Crater");
                     distanceToTravel = -2900;
                     break;
-                case 3: robot.gyroRotationWIP(280, "absolute", "Crater");
-                    distanceToTravel = -3500;
+                case 3: robot.gyroRotationWIP(100, "absolute", "Crater");
+                    distanceToTravel = +3300;
                     break;
                 default: distanceToTravel = 0;
             }
