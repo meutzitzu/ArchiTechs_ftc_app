@@ -212,14 +212,14 @@ public class TeleOpMode extends LinearOpMode {
             if(gamepad2.dpad_left){
                 testAngle = 30;
             }
-
-
+            
 
 //            telemetry.addData("sensor back", robot.rightDistanceSensor.getDistance(DistanceUnit.CM));
 //            telemetry.addData("sensor side", robot.leftDistanceSensor.getDistance(DistanceUnit.CM));
 //            telemetry.addData("lift left", robot.mechLiftLeft.getCurrentPosition());
 //            telemetry.addData("lift right", robot.mechLiftRight.getCurrentPosition());
 //            telemetry.addData("drivetrain pos", robot.driveFrontLeft.getCurrentPosition());
+
             telemetry.update();
 
         }
