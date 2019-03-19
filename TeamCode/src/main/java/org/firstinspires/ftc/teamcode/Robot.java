@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -15,6 +17,9 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.cos;
@@ -44,6 +49,8 @@ public class Robot {
     public DistanceSensor rightDistanceSensor;
     public Telemetry telemetry;
     public LinearOpMode opMode;
+    public BNO055IMU imu;
+    Orientation angles;
 
 
     /**
@@ -53,7 +60,7 @@ public class Robot {
     public final double LIFT_SPEED = 1;
     public final double ROTATION_SPEED_MODIFIER = 0.2;  //max angular velocity of the arm
     public final double MIN_LIFT_POSITION = 0;
-    public final int MAX_LIFT_POSITION = 23000;
+    public final int MAX_LIFT_POSITION = 24000;
     public final int MAX_ROTATION = 2300;  //will probably be ignored; used only as reference for minimum position
     public final int MIN_ROTATION = 0;  //useful
     public final int ROTATION_LENGTH = MAX_ROTATION - MIN_ROTATION; //
@@ -74,6 +81,16 @@ public class Robot {
 
     public void init(HardwareMap hashMap, boolean teleOp, Telemetry tele, LinearOpMode mode) throws InterruptedException {
 
+
+        /** Imu Stuff */
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+        parameters.loggingEnabled      = true;
+        parameters.loggingTag          = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+
         /** Initializing hardware variables */
 
         driveFrontLeft = hashMap.get(DcMotor.class, "driveFrontLeft");
@@ -90,6 +107,8 @@ public class Robot {
         rightDistanceSensor = hashMap.get(DistanceSensor.class, "distanceSensorRight");
         modernRoboticsI2cGyro = hashMap.get(ModernRoboticsI2cGyro.class, "gyro");
         gyro = (IntegratingGyroscope) modernRoboticsI2cGyro;
+        imu = hashMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
         telemetry = tele;
         opMode = mode;
 
@@ -108,13 +127,13 @@ public class Robot {
         driveRearLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         driveRearLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        //mechLiftLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        mechLiftLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         mechLiftLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        mechLiftLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        mechLiftLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        //mechLiftRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        mechLiftRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         mechLiftRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        mechLiftRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        mechLiftRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         mechExt.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         mechExt.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -448,10 +467,10 @@ public class Robot {
             setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
 
-        targetPositionHandler driveFrontLeftHandler = new targetPositionHandler(driveFrontLeft);
-        targetPositionHandler driveFrontRightHandler = new targetPositionHandler(driveFrontRight);
-        targetPositionHandler driveRearLeftHandler = new targetPositionHandler(driveRearLeft);
-        targetPositionHandler driveRearRightHandler = new targetPositionHandler(driveRearRight);
+        TargetPositionHandler driveFrontLeftHandler = new TargetPositionHandler(driveFrontLeft);
+        TargetPositionHandler driveFrontRightHandler = new TargetPositionHandler(driveFrontRight);
+        TargetPositionHandler driveRearLeftHandler = new TargetPositionHandler(driveRearLeft);
+        TargetPositionHandler driveRearRightHandler = new TargetPositionHandler(driveRearRight);
 
         switch(movementType){
             case "translation":
@@ -630,12 +649,16 @@ public class Robot {
 
 
         public void gyroRotationWIP(int desiredTheta, String rotationType, String side){
-            int initialTheta, currentTheta;
-            int error;
+//            int initialTheta, currentTheta;
+            float initialTheta, currentTheta;
+            float error;
             double outSpeed;
-            double proportionalConstant = 0.1; //0.027
+            double proportionalConstant = 0.075; //0.027
 
-            initialTheta = mathModulo(modernRoboticsI2cGyro.getIntegratedZValue(),360);
+            angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+
+//            initialTheta = mathModulo(modernRoboticsI2cGyro.getIntegratedZValue(),360);
+            initialTheta = mathModuloFloat(angles.firstAngle, 360);
 
             if(rotationType.equals("absolute")) {
                 if (side.equals("Crater")) {
@@ -645,7 +668,7 @@ public class Robot {
                 }
             }
             else if(rotationType.equals("relative")){
-                desiredTheta = initialTheta + desiredTheta;
+                desiredTheta = (int)initialTheta + desiredTheta;
             }
 
 
@@ -657,28 +680,29 @@ public class Robot {
             //making the initial position equal the 0 indication o gyro
             currentTheta = 0;
 
-            if(mathModulo(desiredTheta - initialTheta, 360) <= 180){
+            if(mathModuloFloat(desiredTheta - initialTheta, 360) <= 180){
                 ///CCW
-                error = mathModulo(desiredTheta - initialTheta, 360);
+                error = mathModuloFloat(desiredTheta - initialTheta, 360);
             }
             else{
                 ///CW
-                error = mathModulo(desiredTheta - initialTheta, 360) - 360;
+                error = mathModuloFloat(desiredTheta - initialTheta, 360) - 360;
             }
 
             //getting the error
 
-            while (Math.abs(error) != 0 && !opMode.isStopRequested()) {
+            while (Math.abs(error) > 0.7 && !opMode.isStopRequested()) {
 
+                angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
-                currentTheta = mathModulo(modernRoboticsI2cGyro.getIntegratedZValue(), 360);
+                currentTheta = mathModuloFloat(angles.firstAngle, 360);
 
-                if(mathModulo(desiredTheta - currentTheta, 360) <= 180){
-                        error = mathModulo(desiredTheta - currentTheta, 360);
+                if(mathModuloFloat(desiredTheta - currentTheta, 360) <= 180){
+                        error = mathModuloFloat(desiredTheta - currentTheta, 360);
                         outSpeed = proportionalConstant * error;
                 }
                 else{
-                        error = mathModulo(desiredTheta-currentTheta, 360) - 360;
+                        error = mathModuloFloat(desiredTheta-currentTheta, 360) - 360;
                         outSpeed = proportionalConstant * error;
 
                 }
@@ -692,6 +716,11 @@ public class Robot {
 
 
                 mecanumMovement(0, 0, -outSpeed);
+
+                telemetry.addData("heading", currentTheta);
+                telemetry.addData("error", error);
+                telemetry.addData("speed", outSpeed);
+                telemetry.update();
 
             }
 
@@ -710,6 +739,16 @@ public class Robot {
 
             return  result;
         }
+
+        public float mathModuloFloat(float numberToBeModuloed, int n){
+        float result = numberToBeModuloed % n;
+
+        if(result < 0){
+            result += 360;
+        }
+
+        return  result;
+    }
 
         public boolean gyroXYAxisDisplacement(){
             double xRawValue;

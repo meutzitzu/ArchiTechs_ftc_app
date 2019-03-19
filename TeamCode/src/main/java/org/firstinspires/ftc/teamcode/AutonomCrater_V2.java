@@ -255,57 +255,60 @@ public class AutonomCrater_V2 extends LinearOpMode {
 
                     for (Recognition recognition : updatedRecognitions) {
 
-                        if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                            goldMineralX = (int) recognition.getLeft() + (int)recognition.getWidth() / 2;
+                        if(Math.abs(recognition.getWidth() / recognition.getHeight() - 1) < 0.35) {
 
-                            goldMineral = true;
-                            for (int i = 1; i <= 3; i++) {
-                                if (extremecoordinatesMinerals[0][i] == 0) {
-                                    extremecoordinatesMinerals[2][i] = goldMineralX;
-                                    extremecoordinatesMinerals[1][i] = robot.globalGyroValue("Crater") + 270 + supportAngle;
-                                    extremecoordinatesMinerals[0][i] = 2;
-                                    extremecoordinatesMinerals[3][i] = robot.VutoDegrees(extremecoordinatesMinerals[2][i]) + robot.mathModulo(extremecoordinatesMinerals[1][i], 360);
-                                    extremecoordinatesMinerals[3][i] = robot.mathModulo(extremecoordinatesMinerals[3][i], 360);
-                                    break;
-                                }
-                            }
+                            if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
+                                goldMineralX = (int) recognition.getLeft() + (int) recognition.getWidth() / 2;
 
-                        }
-
-                        if(recognition.getLabel().equals(LABEL_SILVER_MINERAL)){
-                            newSphere = true;
-                            silverMineralX = (int) recognition.getLeft() + (int)recognition.getWidth() / 2;
-                            robotSphereAngle = robot.globalGyroValue("Crater") + 270 + supportAngle;
-                            sphereVuAngle = robot.VutoDegrees(silverMineralX);
-
-                            sphereTruePosition = robot.mathModulo(sphereVuAngle + Math.abs(robotSphereAngle), 360);
-
-                            for(int i = 1;i <= 3;i ++){
-                                if(extremecoordinatesMinerals[0][i] != 0){
-                                    if(extremecoordinatesMinerals[3][i] < 100){
-                                        extremecoordinatesMinerals[3][i] = 350;
-                                    }
-                                    if(Math.abs(sphereTruePosition - extremecoordinatesMinerals[3][i]) < 20){
-                                        newSphere = false;
-                                    }
-                                }
-                            }
-
-                            if(newSphere) {
+                                goldMineral = true;
                                 for (int i = 1; i <= 3; i++) {
                                     if (extremecoordinatesMinerals[0][i] == 0) {
-                                        extremecoordinatesMinerals[2][i] = silverMineralX;
-                                        extremecoordinatesMinerals[1][i] = robotSphereAngle;
-                                        extremecoordinatesMinerals[0][i] = 1;
-                                        extremecoordinatesMinerals[3][i] = sphereTruePosition;
+                                        extremecoordinatesMinerals[2][i] = goldMineralX;
+                                        extremecoordinatesMinerals[1][i] = robot.globalGyroValue("Crater") + 270 + supportAngle;
+                                        extremecoordinatesMinerals[0][i] = 2;
+                                        extremecoordinatesMinerals[3][i] = robot.VutoDegrees(extremecoordinatesMinerals[2][i]) + robot.mathModulo(extremecoordinatesMinerals[1][i], 360);
+                                        extremecoordinatesMinerals[3][i] = robot.mathModulo(extremecoordinatesMinerals[3][i], 360);
                                         break;
                                     }
                                 }
+
                             }
 
+                            if (recognition.getLabel().equals(LABEL_SILVER_MINERAL)) {
+                                newSphere = true;
+                                silverMineralX = (int) recognition.getLeft() + (int) recognition.getWidth() / 2;
+                                robotSphereAngle = robot.globalGyroValue("Crater") + 270 + supportAngle;
+                                sphereVuAngle = robot.VutoDegrees(silverMineralX);
+
+                                sphereTruePosition = robot.mathModulo(sphereVuAngle + Math.abs(robotSphereAngle), 360);
+
+                                for (int i = 1; i <= 3; i++) {
+                                    if (extremecoordinatesMinerals[0][i] != 0) {
+                                        if (extremecoordinatesMinerals[3][i] < 100) {
+                                            extremecoordinatesMinerals[3][i] = 350;
+                                        }
+                                        if (Math.abs(sphereTruePosition - extremecoordinatesMinerals[3][i]) < 20) {
+                                            newSphere = false;
+                                        }
+                                    }
+                                }
+
+                                if (newSphere) {
+                                    for (int i = 1; i <= 3; i++) {
+                                        if (extremecoordinatesMinerals[0][i] == 0) {
+                                            extremecoordinatesMinerals[2][i] = silverMineralX;
+                                            extremecoordinatesMinerals[1][i] = robotSphereAngle;
+                                            extremecoordinatesMinerals[0][i] = 1;
+                                            extremecoordinatesMinerals[3][i] = sphereTruePosition;
+                                            break;
+                                        }
+                                    }
+                                }
+
+
+                            }
 
                         }
-
                         if(goldMineral){
                             break;
                         }
@@ -328,6 +331,11 @@ public class AutonomCrater_V2 extends LinearOpMode {
 
             }
 
+            robot.telemetry.addData("P", extremecoordinatesMinerals[0][1] + " " + extremecoordinatesMinerals[0][2] +" " + extremecoordinatesMinerals[0][3]);
+            robot.telemetry.addData("X", extremecoordinatesMinerals[1][1] + " " + extremecoordinatesMinerals[1][2] +" " + extremecoordinatesMinerals[1][3]);
+            robot.telemetry.addData("Vu", extremecoordinatesMinerals[2][1] + " " + extremecoordinatesMinerals[2][2] +" " + extremecoordinatesMinerals[2][3]);
+            robot.telemetry.addData("Pos", extremecoordinatesMinerals[3][1] + " " + extremecoordinatesMinerals[3][2] +" " + extremecoordinatesMinerals[3][3]);
+            robot.telemetry.update();
 
             for(int i = 1;i <= 3; i++){
                 if(extremecoordinatesMinerals[3][i] == -1){
@@ -341,7 +349,7 @@ public class AutonomCrater_V2 extends LinearOpMode {
                         mineralSequence[2] = extremecoordinatesMinerals[0][i];
                     }
                 }
-                else if(extremecoordinatesMinerals[3][i] <= 337 && extremecoordinatesMinerals[3][i] >= 293){
+                else if(extremecoordinatesMinerals[3][i] <= 337 && extremecoordinatesMinerals[3][i] >= 300){
                     if(mineralSequence[2] == 0) {
                         mineralSequence[2] = extremecoordinatesMinerals[0][i];
                     }
@@ -349,7 +357,7 @@ public class AutonomCrater_V2 extends LinearOpMode {
                         mineralSequence[3] = extremecoordinatesMinerals[0][i];
                     }
                 }
-                else if(extremecoordinatesMinerals[3][i] < 293){
+                else if(extremecoordinatesMinerals[3][i] < 300){
                     mineralSequence[3] = extremecoordinatesMinerals[0][i];
                 }
             }
@@ -367,7 +375,6 @@ public class AutonomCrater_V2 extends LinearOpMode {
                     mineralSequence[i] = 2;
                 }
             }
-
 
 
             mineralDisplacement(mineralSequence);
@@ -422,7 +429,7 @@ public class AutonomCrater_V2 extends LinearOpMode {
 
             robot.setDrivetrainPosition(hittingMineralDistance, "translation", 1);
 
-            robot.setDrivetrainPosition((-hittingMineralDistance) / 10 * 7, "translation", 1);
+            robot.setDrivetrainPosition((-hittingMineralDistance) / 10 * 6, "translation", 1);
 
             this.gettingInLanderPosition();
 
@@ -497,43 +504,91 @@ public class AutonomCrater_V2 extends LinearOpMode {
 
          public void gettingInLanderPosition(){
              double proportionalConstant = 1.0 / 60;
-             double currentError = robot.leftDistanceSensor.getDistance(DistanceUnit.CM) - 5;
+             double currentError = 50;
              double outSpeed; // 1->strafing speed (negative for left), 2->forwardSpeed (positive for reverse)
              int ticksToDepot;
              double minDistanceToWall = 12;
 
              robot.gyroRotationWIP(45, "absolute", "Crater");
 
-             robot.setDrivetrainPosition(-3000, "translation", 1);
+             robot.setDrivetrainPosition(-3000, "translation", 0.8);
 
              robot.gyroRotationWIP(90, "absolute", "Crater");
 
+             int initialDriveTrainPosition = robot.driveFrontLeft.getCurrentPosition();
+             int currentDriveTrainPosition = initialDriveTrainPosition;
+
+             robot.telemetry.clear();
+
              while(currentError > minDistanceToWall && !robot.opMode.isStopRequested()){
-                 currentError = robot.leftDistanceSensor.getDistance(DistanceUnit.CM);
+
+                 if(Math.abs(robot.leftDistanceSensor.getDistance(DistanceUnit.CM) - currentError) < 10) {
+                     currentError = robot.leftDistanceSensor.getDistance(DistanceUnit.CM);
+                 }
 
                  outSpeed = proportionalConstant * currentError;
 
                  outSpeed = Range.clip(outSpeed, -1, 1);
 
+
+//                 if(currentDriveTrainPosition - initialDriveTrainPosition < 2600 && currentError <= minDistanceToWall){
+//                     currentError = minDistanceToWall + 1;
+//                 }
+//
+//                 if(currentDriveTrainPosition - initialDriveTrainPosition > 2700){
+//                     break;
+//                 }
+
                  robot.mecanumMovement(outSpeed, 0, 0);
 
                  robot.telemetry.addData("distance", currentError);
-                 robot.telemetry.update();
+                 robot.telemetry.addData("real distance", robot.leftDistanceSensor.getDistance((DistanceUnit.CM)));
              }
+
+             robot.telemetry.update();
+
+             robot.gyroRotationWIP(90, "absolute", "Crater");
 
              robot.setDrivetrainPosition(-300, "strafing", 1);
 
-//             robot.setDrivetrainMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
              ticksToDepot = robot.driveFrontLeft.getCurrentPosition();
 
-             robot.mecanumMovement(0, 1, 0);
+             robot.mecanumMovement(0, 0.8, 0);
 
+             initialDriveTrainPosition = robot.driveFrontLeft.getCurrentPosition();
+             currentDriveTrainPosition = initialDriveTrainPosition;
 
-             while(robot.rightDistanceSensor.getDistance(DistanceUnit.CM) > 55){
-                 robot.telemetry.addData("Distance", robot.rightDistanceSensor.getDistance(DistanceUnit.CM));
-                 robot.telemetry.update();
+             currentError = 220;
+
+             robot.telemetry.clear();
+
+             while(currentError > 55){
+                 currentDriveTrainPosition = robot.driveFrontLeft.getCurrentPosition();
+
+//                 if(Math.abs(currentError - robot.rightDistanceSensor.getDistance(DistanceUnit.CM)) < 40){
+//                    currentError = robot.rightDistanceSensor.getDistance(DistanceUnit.CM);
+//                 }
+
+                 if(robot.rightDistanceSensor.getDistance(DistanceUnit.CM) > 30){
+                     currentError = robot.rightDistanceSensor.getDistance(DistanceUnit.CM);
+                 }
+
+                    //                 if(currentDriveTrainPosition - initialDriveTrainPosition < 5500 && currentError <= 55){
+//                     currentError = 56;
+//                 }
+//
+//                 if(currentDriveTrainPosition - initialDriveTrainPosition > 5650){
+//                     break;
+//                 }
+
+                 robot.telemetry.addData("Sensor Distance", robot.rightDistanceSensor.getDistance(DistanceUnit.CM));
+                 robot.telemetry.addData("Error", currentError);
+
              }
+
+             robot.telemetry.update();
+             robot.mecanumMovement(0,0,0);
+
 
              sleep(1000);
 
@@ -543,10 +598,6 @@ public class AutonomCrater_V2 extends LinearOpMode {
 
              robot.mecanumMovement(0,0,0);
 
-             while(robot.opMode.opModeIsActive()){
-                 robot.telemetry.addData("dwqdwq", "over");
-                 robot.telemetry.update();
-             }
 
          }
 

@@ -42,14 +42,8 @@ public class Autonom extends LinearOpMode {
         robot.init(hardwareMap, false, telemetry, this);
         initStuff();
 
-        robot.mechLiftRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.mechLiftLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
         robot.mechLiftRight.setPower(0);
-        robot.mechLiftRight.setPower(0);
-
-        robot.mechLiftRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.mechLiftLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.mechLiftLeft.setPower(0);
 
         telemetry.update();
 
@@ -253,10 +247,6 @@ public class Autonom extends LinearOpMode {
     private void sampleMineral(int[] mineralPosition) {
         int goldMineralPosition = -1;
 
-//        mineralPosition[1] = 0;
-//        mineralPosition[2] = 0;
-//        mineralPosition[3] = 0;
-
         for(int index = 1; index <= 3; index++){
             if(mineralPosition[index] == 2){
                 goldMineralPosition = index;
@@ -287,7 +277,7 @@ public class Autonom extends LinearOpMode {
 
             robot.setDrivetrainPosition(distanceToTravel, "translation", 1);
 
-            robot.setDrivetrainPosition((-distanceToTravel) / 10 * 7, "translation", 1);
+            robot.setDrivetrainPosition((-distanceToTravel) / 10 * 6, "translation", 1);
         }
 
     }

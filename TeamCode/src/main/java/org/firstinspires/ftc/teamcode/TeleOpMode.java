@@ -1,13 +1,18 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 @TeleOp(name="OpMode", group="Linear OpMode")
 public class TeleOpMode extends LinearOpMode {
@@ -18,6 +23,13 @@ public class TeleOpMode extends LinearOpMode {
 
     //new object as robot with all properties and methods
     Robot robot = new Robot();
+
+    // The IMU sensor object
+    BNO055IMU imu;
+
+    // State used for updating telemetry
+    Orientation angles;
+    Acceleration gravity;
 
     //all the strange local variables such as brakeFactor
     double brakeFactor = 1, brakeFactor_2 = 1;
@@ -36,6 +48,7 @@ public class TeleOpMode extends LinearOpMode {
     int testAngle = 45;
     int rawX, rawY, rawZ;
 
+
     boolean gyroXYFirst = true;
 
     int newMaxRotation = -420;
@@ -52,6 +65,8 @@ public class TeleOpMode extends LinearOpMode {
         stopperTimer.reset();
 
         telemetry.clear();
+
+
 
         while(opModeIsActive()){
 
@@ -191,13 +206,13 @@ public class TeleOpMode extends LinearOpMode {
                 robot.liftMovement(0, false);
             }
 
-            if(gamepad2.dpad_up) {
-                robot.setDriveTrainPostionDIY(1000, "translation", 1);
-            } else if(gamepad2.dpad_left){
-                robot.setDriveTrainPostionDIY(1000, "strafing", 1);
-            } else if (gamepad2.dpad_right){
-                robot.setDriveTrainPostionDIY(1000, "rotation", 1);
-            }
+//            if(gamepad2.dpad_up) {
+//                robot.setDriveTrainPostionDIY(1000, "translation", 1);
+//            } else if(gamepad2.dpad_left){
+//                robot.setDriveTrainPostionDIY(1000, "strafing", 1);
+//            } else if (gamepad2.dpad_right){
+//                robot.setDriveTrainPostionDIY(1000, "rotation", 1);
+//            }
 
 
 
@@ -268,7 +283,7 @@ public class TeleOpMode extends LinearOpMode {
             }
 
             if (grabberMoving) {
-                robot.mechGrab.setPower(-robot.GRABBING_SPEED);
+                robot.mechGrab.setPower(robot.GRABBING_SPEED);
             }
             if(!grabberMoving){
                 robot.mechGrab.setPower(0);
@@ -289,32 +304,33 @@ public class TeleOpMode extends LinearOpMode {
 
 
             if(gamepad2.dpad_up){
+//                robot.setDriveTrainPostionDIY(1000, "translation", 1);
                 testAngle = 0;
             }
             if(gamepad2.dpad_down){
-                testAngle = 45;
+//                robot.setDriveTrainPostionDIY(1000, "rotation", 1);
+                testAngle = 180;
             }
             if(gamepad2.dpad_right){
-                testAngle = 90;
+//                robot.setDriveTrainPostionDIY(1000, "strafing", 1);
+                testAngle = 210;
             }
             if(gamepad2.dpad_left){
                 testAngle = 30;
             }
 
+//            robot.gyroRotationWIP(testAngle, "absolute", "Crater");
 
-            rawX = robot.modernRoboticsI2cGyro.rawX();
-            rawY = robot.modernRoboticsI2cGyro.rawY();
-            rawZ = robot.modernRoboticsI2cGyro.rawZ();
+            telemetry.addData("sensor back", robot.rightDistanceSensor.getDistance(DistanceUnit.CM));
+            telemetry.addData("sensor side", robot.leftDistanceSensor.getDistance(DistanceUnit.CM));
+            telemetry.addData("lift left", robot.mechLiftLeft.getCurrentPosition());
+            telemetry.addData("lift right", robot.mechLiftRight.getCurrentPosition());
+            telemetry.addData("drivetrain pos", robot.driveFrontLeft.getCurrentPosition());
+            telemetry.update();
 
-            AngularVelocity rates = robot.gyro.getAngularVelocity(AngleUnit.DEGREES);
-
-            telemetry.addLine()
-                    .addData("dx", formatRate(rates.xRotationRate))
-                    .addData("dy", formatRate(rates.yRotationRate))
-                    .addData("dz", "%s deg/s", formatRate(rates.zRotationRate));
         }
 
-            telemetry.update();
+
 
     }
 

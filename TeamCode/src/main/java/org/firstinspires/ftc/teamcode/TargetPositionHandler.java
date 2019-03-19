@@ -2,12 +2,12 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-public class targetPositionHandler implements Runnable {
+public class TargetPositionHandler implements Runnable {
 
     private DcMotor motor;
     private int targetPosition;
 
-    targetPositionHandler(DcMotor dcMotor){
+    TargetPositionHandler(DcMotor dcMotor){
         this.motor = dcMotor;
     }
 
