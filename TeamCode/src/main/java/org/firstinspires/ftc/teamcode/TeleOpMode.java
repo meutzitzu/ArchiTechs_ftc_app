@@ -326,6 +326,8 @@ public class TeleOpMode extends LinearOpMode {
             telemetry.addData("lift left", robot.mechLiftLeft.getCurrentPosition());
             telemetry.addData("lift right", robot.mechLiftRight.getCurrentPosition());
             telemetry.addData("drivetrain pos", robot.driveFrontLeft.getCurrentPosition());
+
+            telemetry.addData("rot", robot.mechRotation.getCurrentPosition());
             telemetry.update();
 
         }

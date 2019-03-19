@@ -595,9 +595,27 @@ public class AutonomCrater_V2 extends LinearOpMode {
              ticksToDepot = -ticksToDepot + robot.driveFrontLeft.getCurrentPosition();
 
              robot.setDrivetrainPosition(ticksToDepot + 200 , "translation", 1);
+             while(robot.driveRearLeft.getCurrentPosition() > ticksToDepot / 2){
 
+             }
+             Thread mechRotMovement = new Thread(new Runnable() {
+                 @Override
+                 public void run() {
+                     robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                     robot.mechRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                     robot.mechRotation.setTargetPosition(2000);
+                     robot.mechRotation.setPower(1);
+                 }
+             });
+
+             mechRotMovement.start();
              robot.mecanumMovement(0,0,0);
-
+             try {
+                 mechRotMovement.join();
+             } catch (InterruptedException e) {
+                 e.printStackTrace();
+             }
 
          }
 
