@@ -317,70 +317,61 @@ public class Robot {
      * waiting a full restructure
      */
 
-    public void rotationMovementWIP(boolean goingUp, double brakeFactor) {
+    public void rotationMovementWIP( int desiredArmPosition, int desiredExtension) {
+        double proportionalConstantArm = 1.0 / 1600, derivativeConstantArm = 0, integralConstantArm = 0;
+        double proportionalTermArm, derivativeTermArm, integralTermArm;
+        double outSpeedArm;
+        int integralSumArm = 0;
+        int previousErrorArm, currentErrorArm = desiredArmPosition - mechRotation.getCurrentPosition();
 
-        double rotationSpeed = 0.3;
-        int theta = mechRotation.getCurrentPosition();
-        int error;
-        boolean up = true;
+        double proportionalConstantExt = 1.0 / (2 * desiredExtension), derivativeConstantExt = 0, integralConstantExt = 0;
+        double proportionalTermExt, derivativeTermExt, integralTermExt;
+        double outSpeedExt;
+        int integralSumExt = 0;
+        int previousErrorExt, currentErrorExt = desiredExtension - mechExt.getCurrentPosition();
 
-        if (mechRotation.getMode() == DcMotor.RunMode.RUN_TO_POSITION) {
-            mechRotation.setPower(0);
-            mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        while(Math.abs(currentErrorArm) > 2 && Math.abs(currentErrorExt) > 2 && !opMode.isStopRequested()){
+            previousErrorArm = currentErrorArm;
+            currentErrorArm = desiredArmPosition - mechRotation.getCurrentPosition();
+
+            proportionalTermArm = proportionalConstantArm * currentErrorArm;
+            derivativeTermArm = derivativeConstantArm * (currentErrorArm - previousErrorArm);
+            integralTermArm= integralConstantArm * integralSumArm;
+
+            integralSumArm = integralSumArm + currentErrorArm;
+
+            outSpeedArm = proportionalTermArm + derivativeTermArm + integralTermArm;
+
+            outSpeedArm = Range.clip(outSpeedArm, -0.8, 0.8);
+
+            mechRotation.setPower(outSpeedArm);
+
+
+            previousErrorExt = currentErrorExt;
+            currentErrorExt = desiredExtension - mechExt.getCurrentPosition();
+
+            proportionalTermExt = proportionalConstantExt * currentErrorExt;
+            integralTermExt = integralConstantExt * integralSumExt;
+            derivativeTermExt = derivativeConstantExt * (currentErrorExt - previousErrorExt);
+
+            integralSumExt = integralSumExt + currentErrorExt;
+
+            outSpeedExt = proportionalTermExt + integralTermExt + derivativeTermExt;
+            outSpeedExt = Range.clip(outSpeedExt, -0.8, 0.8);
+
+            mechExt.setPower(outSpeedExt);
+
+
+
+            telemetry.addData("propArm", proportionalTermArm);
+            telemetry.addData("integArm", integralTermArm);
+            telemetry.addData("outspeedArm", outSpeedArm);
         }
 
-        if (goingUp) {
-            error = theta - MIN_ROTATION;
-            if (mechRotation.getMode() != DcMotor.RunMode.RUN_USING_ENCODER) {
-                mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            }
-        } else {
-            error = theta - MIN_ROTATION;
-            rotationSpeed = -rotationSpeed;
-            up = false;
-        }
-
-
-        if (up) {
-
-            if (error >= 0) {
-                rotationSpeed = (rotationSpeed) * Math.sin(0.23 * (tickToRad(error)) + 0.3);
-            } else {
-                rotationSpeed = 0.3;
-            }
-
-            if (ROTATION_LENGTH - error < 10) {
-                rotationSpeed = 0;
-            }
-        } else {
-            if (error > (ROTATION_LENGTH * ((double) 2 / 3))) {
-                if (mechRotation.getMode() != DcMotor.RunMode.RUN_USING_ENCODER) {
-                    mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                }
-                rotationSpeed = rotationSpeed * ((double) 1 / error) * ((ROTATION_LENGTH * ((double) 1 / 2)));
-            } else if (error <= (ROTATION_LENGTH * ((double) 2 / 3)) && error > 10) {
-
-                /** Daca vreti sa coboare bratul cu encoder, comentati linia chiar de sus
-                 *  cu encoder - coboara mai controlat, dar sacadat
-                 *  fara encoder - nu sacadeaza, dar poate se izbeste
-                 *
-                 *  Va puteti juca si cu puterea de aici un pic -> aia cu rotationSpeed = -0.05 */
-
-                mechRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                rotationSpeed = -0.05;
-            } else {
-                rotationSpeed = -0.05;
-            }
-        }
-
-
-        rotationSpeed = this.useBrake(rotationSpeed, brakeFactor, false);
-
-
-        mechRotation.setPower(rotationSpeed);
-        telemetry.addData("Error", error);
-
+        telemetry.update();
     }
+
+
 
     double alpha = 0;
     boolean rampingDown = false;

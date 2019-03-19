@@ -41,15 +41,12 @@ public class TeleOpMode extends LinearOpMode {
     int grabDirection = 1;
     int extensionGrabber = 0; // 1 -> extending, 0 -> idle, -1 -> retracting
     String drivingMode = "Local";
-    boolean rotationAdjust = false;
     boolean grabberMoving = false;
-    boolean stopperOpen = false;
     boolean liftOverwitting = false;
     int testAngle = 45;
-    int rawX, rawY, rawZ;
 
 
-    boolean gyroXYFirst = true;
+    boolean armUp = false;
 
     int newMaxRotation = -420;
 
@@ -57,6 +54,7 @@ public class TeleOpMode extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         robot.init(hardwareMap, true, telemetry, this);
 
+//        robot.mechExt.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
 
         waitForStart();
@@ -166,14 +164,25 @@ public class TeleOpMode extends LinearOpMode {
 
 
 
+            //Extension of the arm
+            //gamepad2 -> left_trigger , right_trigger
 
+//            if(gamepad2.left_trigger == 0 && gamepad2.right_trigger == 0){
+//                mechExtSpeed = 0;
+//            }
+//            if(gamepad2.left_trigger > 0){
+//                mechExtSpeed = 0;
+//            }
+//            else if(gamepad2.right_trigger > 0){
+//                mechExtSpeed = 1400;
+//            }
+//
+//            robot.mechExt.setTargetPosition((int)mechExtSpeed);
+//            robot.mechExt.setPower(0.8);
 
 
 
             //Rotation of the main arm
-
-
-
 
 
 
@@ -193,7 +202,7 @@ public class TeleOpMode extends LinearOpMode {
                 robot.mechGrab.setPower(0);
             }
 
-            if(gamepad2.dpad_up){
+            if(gamepad2.dpad_right){
                 robot.mechGrab.setPower(-robot.GRABBING_SPEED);
             }
 
@@ -215,6 +224,11 @@ public class TeleOpMode extends LinearOpMode {
             if(gamepad2.dpad_left){
                 testAngle = 30;
             }
+
+            if(gamepad2.dpad_up || armUp) {
+                robot.rotationMovementWIP(-1600, 1400);
+                armUp = true;
+            }
             
 
 //            telemetry.addData("sensor back", robot.rightDistanceSensor.getDistance(DistanceUnit.CM));
@@ -222,8 +236,6 @@ public class TeleOpMode extends LinearOpMode {
 //            telemetry.addData("lift left", robot.mechLiftLeft.getCurrentPosition());
 //            telemetry.addData("lift right", robot.mechLiftRight.getCurrentPosition());
 //            telemetry.addData("drivetrain pos", robot.driveFrontLeft.getCurrentPosition());
-
-            telemetry.update();
 
         }
 

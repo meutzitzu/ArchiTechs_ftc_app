@@ -55,7 +55,7 @@ public class Autonom extends LinearOpMode {
 
         //navigateToDeploy();
 
-        new AutonomCrater_V2(robot, null).gettingInLanderPosition();
+
 
         stop();
 
@@ -281,11 +281,13 @@ public class Autonom extends LinearOpMode {
             telemetry.addLine("rotation: " + robot.globalGyroValue("Crater"));
             telemetry.update();
 
-            int distanceToGoBack = -distanceToTravel / 10 * 6;
+            int distanceToGoBack = -distanceToTravel / 10 * 5;
 
             robot.setDrivetrainPosition(distanceToTravel, "translation", 1);
 
             robot.setDrivetrainPosition(distanceToGoBack, "translation", 1);
+
+            new AutonomCrater_V2(robot, null).gettingInLanderPosition(goldMineralPosition);
         }
 
     }
