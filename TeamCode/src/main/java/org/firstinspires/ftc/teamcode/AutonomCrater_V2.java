@@ -41,6 +41,7 @@ public class AutonomCrater_V2 extends LinearOpMode {
         boolean samplingFailure = false;
         boolean autonomonTesting = true;
         boolean tensorFlowSafetyNotInitialized = false;
+    int goldMineralPosition = -1; //can be 1, 2, 3
 
 
         Robot robot;
@@ -389,12 +390,10 @@ public class AutonomCrater_V2 extends LinearOpMode {
         }
         void mineralDisplacement(int[] mineralSequence){
 
-            int goldMineralPosition = -1; //can be 1, 2, 3
-
             int lateralDistance = -3300; //-3200
             int midDistance = -2900; //-2500
             int hittingMineralDistance;
-            int leftPosition = 350, midPosition = 315, rightPosition = 280;
+            int leftPosition = 350, midPosition = 315, rightPosition = 285;
 
             for(int i = 1; i <= 3; i++){
                 if(mineralSequence[i] == 2){
@@ -589,32 +588,21 @@ public class AutonomCrater_V2 extends LinearOpMode {
              robot.telemetry.update();
              robot.mecanumMovement(0,0,0);
 
-
-             sleep(1000);
-
+             robot.mechGrab.setPower(robot.MAX_CRSERVO_INPUT);
+            sleep(1000);
+            robot.mechGrab.setPower(0);
              ticksToDepot = -ticksToDepot + robot.driveFrontLeft.getCurrentPosition();
-
-             robot.setDrivetrainPosition(ticksToDepot + 200 , "translation", 1);
-             while(robot.driveRearLeft.getCurrentPosition() > ticksToDepot / 2){
-
-             }
-             Thread mechRotMovement = new Thread(new Runnable() {
-                 @Override
-                 public void run() {
+             int offset = goldMineralPosition == 1 ? -600 : -400;
+             robot.setDrivetrainPosition(ticksToDepot + offset , "translation", 1);
                      robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                      robot.mechRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
                      robot.mechRotation.setTargetPosition(2000);
                      robot.mechRotation.setPower(1);
-                 }
-             });
-
-             mechRotMovement.start();
              robot.mecanumMovement(0,0,0);
-             try {
-                 mechRotMovement.join();
-             } catch (InterruptedException e) {
-                 e.printStackTrace();
+
+             while(robot.opMode.opModeIsActive()){
+
              }
 
          }

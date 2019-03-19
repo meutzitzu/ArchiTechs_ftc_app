@@ -289,6 +289,9 @@ public class TeleOpMode extends LinearOpMode {
                 robot.mechGrab.setPower(0);
             }
 
+            if(gamepad2.dpad_up){
+                robot.mechGrab.setPower(-robot.GRABBING_SPEED);
+            }
 
             //stopper servo
             if(gamepad2.left_bumper && !grabberMoving) {
@@ -336,10 +339,6 @@ public class TeleOpMode extends LinearOpMode {
 
     }
 
-
-    String formatRate(float rate) {
-        return String.format("%.3f", rate);
-    }
 
 
 
