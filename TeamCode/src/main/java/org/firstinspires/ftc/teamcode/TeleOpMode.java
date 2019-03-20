@@ -165,8 +165,21 @@ public class TeleOpMode extends LinearOpMode {
 
 
 
+            //Extending the arm
+            if(gamepad2.left_trigger  == 0 && gamepad2.right_trigger == 0){
+                if(robot.mechExt.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
 
+                }
+            }
+            else if(gamepad2.left_trigger > 0){
+                mechExtSpeed = gamepad2.left_trigger;
+            }
+            else if(gamepad2.right_trigger > 0){
+                mechExtSpeed = -gamepad2.right_trigger;
+            }
 
+            telemetry.addData("mechExtPos", robot.mechExt.getCurrentPosition());
+            telemetry.update();
 
 
 
@@ -212,7 +225,7 @@ public class TeleOpMode extends LinearOpMode {
             if(gamepad2.dpad_left){
                 testAngle = 30;
             }
-            
+
 
 //            telemetry.addData("sensor back", robot.rightDistanceSensor.getDistance(DistanceUnit.CM));
 //            telemetry.addData("sensor side", robot.leftDistanceSensor.getDistance(DistanceUnit.CM));
@@ -220,7 +233,7 @@ public class TeleOpMode extends LinearOpMode {
 //            telemetry.addData("lift right", robot.mechLiftRight.getCurrentPosition());
 //            telemetry.addData("drivetrain pos", robot.driveFrontLeft.getCurrentPosition());
 
-            telemetry.update();
+            //telemetry.update();
 
         }
 
