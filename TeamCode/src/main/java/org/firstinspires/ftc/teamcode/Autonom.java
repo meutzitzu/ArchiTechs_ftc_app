@@ -55,7 +55,7 @@ public class Autonom extends LinearOpMode {
 
         //navigateToDeploy();
 
-        new AutonomCrater_V2(robot, null).gettingInLanderPosition();
+        new AutonomCrater_V2(robot, null, "Crater").gettingInLanderPosition();
 
     }
 
@@ -284,7 +284,8 @@ public class Autonom extends LinearOpMode {
 
     private void attemptSampleFromGround(int[] mineralPosition) {
 
-        new AutonomCrater_V2(robot, tfod).samplingStuff(mineralPosition);
+        new AutonomCrater_V2(robot, tfod, "Crater").samplingStuff(mineralPosition);
+
 
     }
 

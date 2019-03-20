@@ -25,37 +25,29 @@ public class Autonom2 extends LinearOpMode {
     private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
     private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
     private static final String LABEL_SILVER_MINERAL = "Silver Mineral";
-    private boolean testingEnabled = true;
 
-
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    public static int FINAL_GOLD_MINERAL_POSITION = -1;
 
     private static final String VUFORIA_KEY = "AWcgpa7/////AAABmcy/3X8/j0O5rVl/TFsI7jtI2X65iRJuPT0JA+JxFlcGoXjuri+AHgItnHFgUGE5xkMhjhPpZ57eT9HxlpFmryfrXSxOYlX58SyvvCbZo+ftIlY4+x3iNw03eNywXKmPBdM7jmGEk6G1HViitwJy8CrOooxYAl37Vh7w0BZipSRVSDKg0AA+jj7ExvVYPedxSBlkTpR9VyUe7hNfWlK/ijmNcpmiYVYomUbPmef2TqIkxSYvBJKZF7vblCmtlmiSrmY1zyO7Y9xKk46vQ8x7cL8tTZG0zDzfDEC12KbCAJLqSN0qju6Z1gsTAIEJmwvAG0YAfKvZf7oSwtno0t7ZfhfY/2LUws3ydkJUVyZGOB7k";
 
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
-    private int initialLiftPosition;
-
-    boolean goldMineral = false;
-
 
     Robot robot = new Robot();
     ElapsedTime runtime = new ElapsedTime();
-    ElapsedTime mineralRetrievalTimer = new ElapsedTime();
+    private int initialLiftPosition = 0;
+    private boolean testingEnabled = false;
+
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+
     @Override
     public void runOpMode() throws InterruptedException {
 
         robot.init(hardwareMap, false, telemetry, this);
         initStuff();
 
-        robot.mechLiftRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.mechLiftLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
         robot.mechLiftRight.setPower(0);
-        robot.mechLiftRight.setPower(0);
-
-        robot.mechLiftRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.mechLiftLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.mechLiftLeft.setPower(0);
 
         telemetry.update();
 
@@ -67,25 +59,67 @@ public class Autonom2 extends LinearOpMode {
 
         //navigateToDeploy();
 
-        new AutonomCrater_V2(robot, null).gettingInLanderPosition();
+//        new AutonomCrater_V2(robot, null, "Deploy").gettingInLanderPosition();
 
     }
 
-    private double distWallLeft(){
+    private double distWallLeft() {
         double distL = robot.leftDistanceSensor.getDistance(DistanceUnit.CM);
-        distL= Math.sqrt(2)*distL/2;
+        distL = Math.sqrt(2) * distL / 2;
         return distL;
     }
 
-    private double distWallRight(){
+    private double distWallRight() {
         double distR = robot.rightDistanceSensor.getDistance(DistanceUnit.CM);
-        distR= Math.sqrt(2)*distR/2;
+        distR = Math.sqrt(2) * distR / 2;
         return distR;
     }
 
 
-
     private void navigateToDeploy() {
+
+        robot.gyroRotationWIP(45, "absolute", "Crater");
+        double velocity = 1;
+        boolean isClose = false;
+
+
+        ///mitza start
+
+        while (distWallLeft() > 5 && distWallRight() > 10 && !isStopRequested()) {
+            robot.mecanumMovement(0, 1, 0);
+            if (distWallLeft() < 25 || distWallRight() < 30)
+                robot.mecanumMovement(0, 0.3, 0);
+            if (distWallLeft() < 8 || distWallRight() < 12) {
+                robot.mecanumMovement(0, 0, 0);
+            }
+        }
+
+        robot.gyroRotationWIP(90, "absolute", "Crater");
+
+        while (robot.leftDistanceSensor.getDistance(DistanceUnit.CM) > 55) {
+            robot.mecanumMovement(0, 0.5, 0);
+        }
+
+        if (robot.leftDistanceSensor.getDistance(DistanceUnit.CM) < 58) {
+            robot.mecanumMovement(0, 0, 0);
+            robot.mechGrab.setPower(-0.4);
+            ElapsedTime time = new ElapsedTime();
+            while (time.seconds() < 1.5 && !isStopRequested()) {
+
+            }
+            robot.mechGrab.setPower(0);
+        }
+
+        robot.setDrivetrainPosition(7000, "translation", 1);
+
+        robot.mechRotation.setPower(1);
+        ElapsedTime time = new ElapsedTime();
+        while (time.seconds() < 1.5 && !isStopRequested()) {
+
+        }
+        robot.mechRotation.setPower(0);
+
+        stop();
 
     }
 
@@ -99,16 +133,16 @@ public class Autonom2 extends LinearOpMode {
                 boolean foundMineral = false;
                 int mineralPosition = -1;
                 ElapsedTime time = new ElapsedTime();
-                if(tfod != null)
+                if (tfod != null)
                     tfod.activate();
-                while(time.seconds() < 8 && !foundMineral && tfod != null && !isStopRequested()){
+                while (time.seconds() < 8 && !foundMineral && tfod != null && !isStopRequested()) {
 
                     List<Recognition> updatedRecognitionsUnfiltered = tfod.getUpdatedRecognitions();
                     List<Recognition> updatedRecognitions = new ArrayList<>();
 
-                    if(updatedRecognitionsUnfiltered != null)
-                        for(Recognition rec :updatedRecognitionsUnfiltered){
-                            if(rec.getHeight() / rec.getWidth() > .7 && rec.getWidth() > 55 && rec.getHeight() > 55) {
+                    if (updatedRecognitionsUnfiltered != null)
+                        for (Recognition rec : updatedRecognitionsUnfiltered) {
+                            if (rec.getHeight() / rec.getWidth() > .7 && rec.getWidth() > 55 && rec.getHeight() > 55) {
                                 updatedRecognitions.add(rec);
                             }
                         }
@@ -123,12 +157,12 @@ public class Autonom2 extends LinearOpMode {
                         float silverMineral1X = -1;
                         float silverMineral2X = -1;
 
-                        for(int i=0; i<2; i++){
-                            if(updatedRecognitions.get(i).getLabel().equals(LABEL_GOLD_MINERAL)){
+                        for (int i = 0; i < 2; i++) {
+                            if (updatedRecognitions.get(i).getLabel().equals(LABEL_GOLD_MINERAL)) {
                                 goldMineralX = updatedRecognitions.get(i).getLeft();
                                 telemetry.addLine("gold " + i + ": width: " + Float.toString(updatedRecognitions.get(i).getWidth()) + " height: "
                                         + Float.toString(updatedRecognitions.get(i).getHeight()));
-                            } else if(silverMineral1X == -1){
+                            } else if (silverMineral1X == -1) {
 
                                 telemetry.addLine("silver " + i + ": width: " + Float.toString(updatedRecognitions.get(i).getWidth()) + " height: "
                                         + Float.toString(updatedRecognitions.get(i).getHeight()));
@@ -141,15 +175,15 @@ public class Autonom2 extends LinearOpMode {
                             }
                         }
 
-                        if(goldMineralX == -1)
+                        if (goldMineralX == -1)
                             minerals[3] = 2;
-                        else if(goldMineralX < silverMineral1X){
+                        else if (goldMineralX < silverMineral1X) {
                             minerals[1] = 2;
                         } else {
                             minerals[2] = 2;
                         }
 
-                    } else if(updatedRecognitions.size() == 1 && time.seconds() > 7.5){
+                    } else if (updatedRecognitions.size() == 1 && time.seconds() > 7.5) {
 
                         telemetry.addLine("seconds passed: " + time.seconds());
                         telemetry.addLine("objects detected: 1");
@@ -159,23 +193,23 @@ public class Autonom2 extends LinearOpMode {
                         float goldMineralX = -1;
                         float silverMineralX = -1;
 
-                        if(updatedRecognitions.get(0).getLabel().equals(LABEL_GOLD_MINERAL)){
+                        if (updatedRecognitions.get(0).getLabel().equals(LABEL_GOLD_MINERAL)) {
                             goldMineralX = updatedRecognitions.get(0).getLeft();
                         } else {
                             silverMineralX = updatedRecognitions.get(0).getLeft();
                         }
 
-                        if(goldMineralX != -1 && goldMineralX < 300){
+                        if (goldMineralX != -1 && goldMineralX < 300) {
                             minerals[1] = 2;
-                        } else if(goldMineralX != -1 && goldMineralX > 300) {
+                        } else if (goldMineralX != -1 && goldMineralX > 300) {
                             minerals[2] = 2;
                         }
 
                     }
                 }
 
-                for(int i=1; i<= 3; i++)
-                    if(minerals[i] == 2)
+                for (int i = 1; i <= 3; i++)
+                    if (minerals[i] == 2)
                         mineralPosition = i;
                 telemetry.addLine("mineral position: " + mineralPosition);
                 telemetry.update();
@@ -190,9 +224,9 @@ public class Autonom2 extends LinearOpMode {
     private void deployRobot() throws InterruptedException {
 
         Future<int[]> mineralPosition = getMineralAsync();
-        while(robot.mechLiftLeft.getCurrentPosition() < robot.MAX_LIFT_POSITION &&
+        while (robot.mechLiftLeft.getCurrentPosition() < robot.MAX_LIFT_POSITION &&
                 robot.mechLiftRight.getCurrentPosition() < robot.MAX_LIFT_POSITION && !isStopRequested()
-                && !testingEnabled){
+                && !testingEnabled) {
             robot.liftMovement(robot.LIFT_SPEED, false);
         }
 
@@ -205,7 +239,7 @@ public class Autonom2 extends LinearOpMode {
         try {
             sampleMineral(mineralPosition.get());
             executorService.shutdown();
-        } catch (ExecutionException e){
+        } catch (ExecutionException e) {
             telemetry.addLine("Something went wrong: " + e.toString());
         } finally {
             telemetry.update();
@@ -216,52 +250,73 @@ public class Autonom2 extends LinearOpMode {
     private void sampleMineral(int[] mineralPosition) {
         int goldMineralPosition = -1;
 
-//        mineralPosition[1] = 0;
-//        mineralPosition[2] = 0;
-//        mineralPosition[3] = 0;
-
-        for(int index = 1; index <= 3; index++){
-            if(mineralPosition[index] == 2){
+        for (int index = 1; index <= 3; index++) {
+            if (mineralPosition[index] == 2) {
                 goldMineralPosition = index;
             }
         }
-
-        if(goldMineralPosition == -1){
-            mineralPosition = new int[] {0, 0, 0, 0};
+        goldMineralPosition = -1;
+        FINAL_GOLD_MINERAL_POSITION = goldMineralPosition;
+        if (goldMineralPosition == -1) {
+            mineralPosition = new int[]{0, 0, 0, 0};
             telemetry.clear();
             attemptSampleFromGround(mineralPosition); // aia daca nu merge bine principala ;)
         } else {
             int distanceToTravel;
-            switch (goldMineralPosition){
-                case 1: robot.gyroRotationWIP(0, "absolute", "Deploy");
+            switch (goldMineralPosition) {
+                case 1:
+                    robot.gyroRotationWIP(90, "absolute", "Deploy");
                     distanceToTravel = -3300;
                     break;
-                case 2: robot.gyroRotationWIP(45, "absolute", "Deploy");
+                case 2:
+                    robot.gyroRotationWIP(45, "absolute", "Deploy");
                     distanceToTravel = -2900;
                     break;
-                case 3: robot.gyroRotationWIP(90, "absolute", "Deploy");
+                case 3:
+                    robot.gyroRotationWIP(180, "absolute", "Deploy");
                     distanceToTravel = +3300;
                     break;
-                default: distanceToTravel = 0;
+                default:
+                    distanceToTravel = 0;
             }
-            telemetry.clear();
-            telemetry.addLine("rotation: " + robot.globalGyroValue("Deploy"));
-            telemetry.update();
-
             robot.setDrivetrainPosition(distanceToTravel, "translation", 1);
 
-            robot.setDrivetrainPosition((-distanceToTravel) / 10 * 7, "translation", 1);
+            if(FINAL_GOLD_MINERAL_POSITION == 3) {
+                robot.gyroRotationWIP(180, "absolute", "Deploy");
+                robot.setDrivetrainPosition(-distanceToTravel - 300, "translation", 1);
+                robot.gyroRotationWIP(0, "absolute", "Deploy");
+                robot.setDrivetrainPosition(-4500, "strafing", 1);
+                robot.gyroRotationWIP(0, "absolute", "Deploy");
+                while(robot.rightDistanceSensor.getDistance(DistanceUnit.CM) > 60){
+                    robot.mecanumMovement(0, 1, 0);
+                }
+                
+                robot.mecanumMovement(0, 0, 0);
+                robot.mechRotation.setPower(-1);
+                sleep(1000);
+                robot.mechRotation.setPower(0);
+                
+                moveToCrater();
+
+
+                return;
+            }
+
         }
 
     }
 
+    private void moveToCrater() {
+    }
+
+
     private void attemptSampleFromGround(int[] mineralPosition) {
 
-        new AutonomCrater_V2(robot, tfod).samplingStuff(mineralPosition);
+        new AutonomCrater_V2(robot, tfod, "Deploy").samplingStuff(mineralPosition);
 
     }
 
-    private void initStuff() throws InterruptedException{
+    private void initStuff() throws InterruptedException {
         robot.init(hardwareMap, false, telemetry, this);
         robot.setDrivetrainMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.setDrivetrainMode(DcMotor.RunMode.RUN_USING_ENCODER);
