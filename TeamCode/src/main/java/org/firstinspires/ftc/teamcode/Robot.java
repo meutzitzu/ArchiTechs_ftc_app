@@ -147,13 +147,13 @@ public class Robot {
             mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             mechRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            modernRoboticsI2cGyro.calibrate();
-
-            while (modernRoboticsI2cGyro.isCalibrating() && !opMode.isStopRequested()) {
-                telemetry.addData("gyro", "calib");
-                telemetry.update();
-                sleep(50);
-            }
+//            modernRoboticsI2cGyro.calibrate();
+//
+//            while (modernRoboticsI2cGyro.isCalibrating() && !opMode.isStopRequested()) {
+//                telemetry.addData("gyro", "calib");
+//                telemetry.update();
+//                sleep(50);
+//            }
 
             telemetry.clear();
             telemetry.addData("calib", "over");

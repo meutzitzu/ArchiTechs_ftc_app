@@ -45,6 +45,11 @@ public class TeleOpMode extends LinearOpMode {
     boolean liftOverwitting = false;
     int testAngle = 45;
 
+    PID armPid = null;
+    PID extPid = null;
+    Thread armThread = null;
+    Thread extThread = null;
+
 
     boolean armUp = false;
 
@@ -55,6 +60,10 @@ public class TeleOpMode extends LinearOpMode {
         robot.init(hardwareMap, true, telemetry, this);
 
 //        robot.mechExt.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        extPid = new PID(robot.mechExt, 0, 1.0 / 2800, 0, 0, robot.opMode, telemetry);
 
 
         waitForStart();
@@ -208,28 +217,73 @@ public class TeleOpMode extends LinearOpMode {
 
 
 
+//            if(gamepad2.dpad_up) {
+//
+//                armPidDown.stop = true;
+//
+//                if(!armThreadUp.isAlive()){
+//                    armPidUp.stop = false;
+//                    armThreadUp.start();
+//                }
+//
+//
+//                if(robot.mechRotation.getCurrentPosition() < -400){
+//                    if(!extThreadIn.isAlive()) {
+//                        extPidIn.stop = false;
+//                        extThreadIn.start();
+//                    }
+//                }
+//                else{
+//                    extPidIn.stop = true;
+//
+//                    if(!extThreadOut.isAlive()){
+//                        extPidOut.stop = false;
+//                        extThreadOut.start();
+//                    }
+//                }
+//
+//            }
+//            else if(gamepad2.dpad_down){
+//
+//                armPidUp.stop = true;
+//
+//                if(!armThreadDown.isAlive()){
+//                    armThreadDown.start();
+//                }
+//
+//                if(robot.mechRotation.getCurrentPosition() > -400) {
+//                    if (!extThreadIn.isAlive()) {
+//                        extPidIn.stop = false;
+//                        extThreadIn.start();
+//                    }
+//                }
+//                else{
+//                        extPidIn.stop = true;
+//
+//                        if(!extThreadOut.isAlive()){
+//                            extPidOut.stop = false;
+//                            extThreadOut.start();
+//                        }
+//                    }
+//
+//            }
+//            else{
+//                armPidUp.stop = true;
+//                armPidDown.stop = true;
+//            }
+
 
             if(gamepad2.dpad_up){
-//                robot.setDriveTrainPostionDIY(1000, "translation", 1);
-                testAngle = 0;
-            }
-            if(gamepad2.dpad_down){
-//                robot.setDriveTrainPostionDIY(1000, "rotation", 1);
-                testAngle = 180;
-            }
-            if(gamepad2.dpad_right){
-//                robot.setDriveTrainPostionDIY(1000, "strafing", 1);
-                testAngle = 210;
-            }
-            if(gamepad2.dpad_left){
-                testAngle = 30;
+                if(armThread == null){
+                    armPid = new PID(robot.mechRotation, -1600, 1.0 / 1000, 1.0 / 1000, 0, robot.opMode, telemetry);
+                    armThread = new Thread(armPid);
+                }
             }
 
-            if(gamepad2.dpad_up || armUp) {
-                robot.rotationMovementWIP(-1600, 1400);
-                armUp = true;
-            }
+
             
+            telemetry.addData("rot position", robot.mechRotation.getCurrentPosition());
+            telemetry.update();
 
 //            telemetry.addData("sensor back", robot.rightDistanceSensor.getDistance(DistanceUnit.CM));
 //            telemetry.addData("sensor side", robot.leftDistanceSensor.getDistance(DistanceUnit.CM));
