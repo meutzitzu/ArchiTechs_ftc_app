@@ -16,11 +16,13 @@ public class PID implements Runnable {
     double initialPosition;
     Telemetry tele;
 
+    boolean velocityControl;
+
     LinearOpMode primitiveOpMode;
 
     double proportionalConstant, derivativeConstant, integralConstant;
 
-    public PID(DcMotor endActuator, double desiredPosition, double KP, double KD, double KI, LinearOpMode opMode, Telemetry tele){
+    public PID(DcMotor endActuator, double desiredPosition, double KP, double KD, double KI, LinearOpMode opMode, Telemetry tele, boolean velocityControl){
         this.endActuator = endActuator;
         this.tele = tele;
 
@@ -30,6 +32,7 @@ public class PID implements Runnable {
 
         this.desiredPosition = desiredPosition;
         this.primitiveOpMode = opMode;
+        this.velocityControl = velocityControl;
 
         this.initialPosition = endActuator.getCurrentPosition();
     }
@@ -45,22 +48,35 @@ public class PID implements Runnable {
 
         ElapsedTime cycleTime = new ElapsedTime();
 
-        endActuator.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
         currentError = desiredPosition - initialPosition;
         cycleTime.reset();
 
+        endActuator.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         while(!stop && !primitiveOpMode.isStopRequested()){
+
+
+
             previousError = currentError;
             currentError = desiredPosition - endActuator.getCurrentPosition();
 
             proportionalTerm = proportionalConstant * currentError;
-            derivativeTerm = derivativeConstant * ((currentError - previousError));
+            derivativeTerm = derivativeConstant * ((currentError - previousError) * cycleTime.seconds());
             integralTerm = integralConstant * integralSum;
+
+
+
+            if(Math.abs(currentError) < 150 || velocityControl){
+                endActuator.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                integralTerm = 0;
+            }
+            else{
+                endActuator.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            }
 
             output = proportionalTerm + derivativeTerm + integralTerm;
 
-            output = Range.clip(output, -0.8, 0.8);
+            output = Range.clip(output, -1, 1);
 
             endActuator.setPower(output);
 

@@ -47,8 +47,10 @@ public class TeleOpMode extends LinearOpMode {
 
     PID armPid = null;
     PID extPid = null;
-    Thread armThread = null;
-    Thread extThread = null;
+    Thread armThread = new Thread();
+    Thread extThread = new Thread();
+
+    ElapsedTime grabberTimer = new ElapsedTime();
 
 
     boolean armUp = false;
@@ -63,7 +65,6 @@ public class TeleOpMode extends LinearOpMode {
 
         robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        extPid = new PID(robot.mechExt, 0, 1.0 / 2800, 0, 0, robot.opMode, telemetry);
 
 
         waitForStart();
@@ -274,15 +275,57 @@ public class TeleOpMode extends LinearOpMode {
 
 
             if(gamepad2.dpad_up){
-                if(armThread == null){
-                    armPid = new PID(robot.mechRotation, -1600, 1.0 / 1000, 1.0 / 1000, 0, robot.opMode, telemetry);
+                if(!armThread.isAlive()){
+                    armPid = new PID(robot.mechRotation, -1650, 1.0 / 1500, 0, 1.0 / 15000 ,robot.opMode, telemetry, false);
                     armThread = new Thread(armPid);
+                    armThread.start();
+                }
+
+                if(robot.mechExt.getCurrentPosition() > -400 || true){
+                    if(!extThread.isAlive()){
+                        extPid = new PID(robot.mechExt, 1400, 1.0 / 2800, 0, 0, robot.opMode, telemetry, true);
+                        extThread = new Thread(extPid);
+                        extThread.start();
+
+                        grabberTimer.reset();
+                    }
+
+                    if(grabberTimer.seconds() < 1){
+                        robot.mechGrab.setPower(-robot.GRABBING_SPEED);
+                    }
+
+                }
+//                else{
+//                    if(extThread.isAlive()){
+//                        extThread.interrupt();
+//                    }
+//
+//
+//
+//                }
+            }
+            else{
+                if(extPid != null) {
+                    extPid.stop = true;
+                }
+                if(armPid != null) {
+                    armPid.stop = true;
                 }
             }
 
+            if(gamepad2.dpad_down){
+                if(!extThread.isAlive()) {
+                    extPid = new PID(robot.mechExt, 1400, 1.0 / 100, 0, 1.0 / 1000, robot.opMode, telemetry, true);
+                    extThread = new Thread(extPid);
+                    extThread.start();
+                }
+            }
 
             
             telemetry.addData("rot position", robot.mechRotation.getCurrentPosition());
+            telemetry.addData("rot Power", robot.mechRotation.getPower());
+            telemetry.addData("ext Power", robot.mechExt.getPower());
+            telemetry.addData("ext Pos", robot.mechExt.getCurrentPosition());
             telemetry.update();
 
 //            telemetry.addData("sensor back", robot.rightDistanceSensor.getDistance(DistanceUnit.CM));
