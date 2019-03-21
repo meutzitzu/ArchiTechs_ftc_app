@@ -59,8 +59,6 @@ public class Autonom2 extends LinearOpMode {
 
         //navigateToDeploy();
 
-//        new AutonomCrater_V2(robot, null, "Deploy").gettingInLanderPosition();
-
     }
 
     private double distWallLeft() {

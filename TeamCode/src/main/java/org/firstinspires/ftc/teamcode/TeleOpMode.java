@@ -41,21 +41,29 @@ public class TeleOpMode extends LinearOpMode {
     int grabDirection = 1;
     int extensionGrabber = 0; // 1 -> extending, 0 -> idle, -1 -> retracting
     String drivingMode = "Local";
-    boolean rotationAdjust = false;
     boolean grabberMoving = false;
-    boolean stopperOpen = false;
     boolean liftOverwitting = false;
     int testAngle = 45;
-    int rawX, rawY, rawZ;
+
+    PID armPid = null;
+    PID extPid = null;
+    Thread armThread = new Thread();
+    Thread extThread = new Thread();
+
+    ElapsedTime grabberTimer = new ElapsedTime();
 
 
-    boolean gyroXYFirst = true;
+    boolean armUp = false;
 
     int newMaxRotation = -420;
 
     @Override
     public void runOpMode() throws InterruptedException {
         robot.init(hardwareMap, true, telemetry, this);
+
+//        robot.mechExt.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 
 
@@ -165,28 +173,26 @@ public class TeleOpMode extends LinearOpMode {
 
 
 
-            //Extending the arm
-            if(gamepad2.left_trigger  == 0 && gamepad2.right_trigger == 0){
-                if(robot.mechExt.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
 
-                }
-            }
-            else if(gamepad2.left_trigger > 0){
-                mechExtSpeed = gamepad2.left_trigger;
-            }
-            else if(gamepad2.right_trigger > 0){
-                mechExtSpeed = -gamepad2.right_trigger;
-            }
+            //Extension of the arm
+            //gamepad2 -> left_trigger , right_trigger
 
-            telemetry.addData("mechExtPos", robot.mechExt.getCurrentPosition());
-            telemetry.update();
+//            if(gamepad2.left_trigger == 0 && gamepad2.right_trigger == 0){
+//                mechExtSpeed = 0;
+//            }
+//            if(gamepad2.left_trigger > 0){
+//                mechExtSpeed = 0;
+//            }
+//            else if(gamepad2.right_trigger > 0){
+//                mechExtSpeed = 1400;
+//            }
+//
+//            robot.mechExt.setTargetPosition((int)mechExtSpeed);
+//            robot.mechExt.setPower(0.8);
 
 
 
             //Rotation of the main arm
-
-
-
 
 
 
@@ -206,44 +212,127 @@ public class TeleOpMode extends LinearOpMode {
                 robot.mechGrab.setPower(0);
             }
 
+            if(gamepad2.dpad_right){
+                robot.mechGrab.setPower(-robot.GRABBING_SPEED);
+            }
 
 
+
+//            if(gamepad2.dpad_up) {
+//
+//                armPidDown.stop = true;
+//
+//                if(!armThreadUp.isAlive()){
+//                    armPidUp.stop = false;
+//                    armThreadUp.start();
+//                }
+//
+//
+//                if(robot.mechRotation.getCurrentPosition() < -400){
+//                    if(!extThreadIn.isAlive()) {
+//                        extPidIn.stop = false;
+//                        extThreadIn.start();
+//                    }
+//                }
+//                else{
+//                    extPidIn.stop = true;
+//
+//                    if(!extThreadOut.isAlive()){
+//                        extPidOut.stop = false;
+//                        extThreadOut.start();
+//                    }
+//                }
+//
+//            }
+//            else if(gamepad2.dpad_down){
+//
+//                armPidUp.stop = true;
+//
+//                if(!armThreadDown.isAlive()){
+//                    armThreadDown.start();
+//                }
+//
+//                if(robot.mechRotation.getCurrentPosition() > -400) {
+//                    if (!extThreadIn.isAlive()) {
+//                        extPidIn.stop = false;
+//                        extThreadIn.start();
+//                    }
+//                }
+//                else{
+//                        extPidIn.stop = true;
+//
+//                        if(!extThreadOut.isAlive()){
+//                            extPidOut.stop = false;
+//                            extThreadOut.start();
+//                        }
+//                    }
+//
+//            }
+//            else{
+//                armPidUp.stop = true;
+//                armPidDown.stop = true;
+//            }
 
 
             if(gamepad2.dpad_up){
-//                robot.setDriveTrainPostionDIY(1000, "translation", 1);
-                testAngle = 0;
+                if(!armThread.isAlive()){
+                    armPid = new PID(robot.mechRotation, -1650, 1.0 / 1500, 0, 1.0 / 15000 ,robot.opMode, telemetry, false);
+                    armThread = new Thread(armPid);
+                    armThread.start();
+                }
+
+                if(robot.mechExt.getCurrentPosition() > -400 || true){
+                    if(!extThread.isAlive()){
+                        extPid = new PID(robot.mechExt, 1400, 1.0 / 2800, 0, 0, robot.opMode, telemetry, true);
+                        extThread = new Thread(extPid);
+                        extThread.start();
+
+                        grabberTimer.reset();
+                    }
+
+                    if(grabberTimer.seconds() < 1){
+                        robot.mechGrab.setPower(-robot.GRABBING_SPEED);
+                    }
+
+                }
+//                else{
+//                    if(extThread.isAlive()){
+//                        extThread.interrupt();
+//                    }
+//
+//
+//
+//                }
             }
+            else{
+                if(extPid != null) {
+                    extPid.stop = true;
+                }
+                if(armPid != null) {
+                    armPid.stop = true;
+                }
+            }
+
             if(gamepad2.dpad_down){
-//                robot.setDriveTrainPostionDIY(1000, "rotation", 1);
-                testAngle = 180;
-            }
-            if(gamepad2.dpad_right){
-//                robot.setDriveTrainPostionDIY(1000, "strafing", 1);
-                testAngle = 210;
-            }
-            if(gamepad2.dpad_left){
-                testAngle = 30;
+                if(!extThread.isAlive()) {
+                    extPid = new PID(robot.mechExt, 1400, 1.0 / 100, 0, 1.0 / 1000, robot.opMode, telemetry, true);
+                    extThread = new Thread(extPid);
+                    extThread.start();
+                }
             }
 
-
-//            telemetry.addData("sensor back", robot.rightDistanceSensor.getDistance(DistanceUnit.CM));
-//            telemetry.addData("sensor side", robot.leftDistanceSensor.getDistance(DistanceUnit.CM));
-//            telemetry.addData("lift left", robot.mechLiftLeft.getCurrentPosition());
-//            telemetry.addData("lift right", robot.mechLiftRight.getCurrentPosition());
-//            telemetry.addData("drivetrain pos", robot.driveFrontLeft.getCurrentPosition());
-
-            //telemetry.update();
+            
+            telemetry.addData("rot position", robot.mechRotation.getCurrentPosition());
+            telemetry.addData("rot Power", robot.mechRotation.getPower());
+            telemetry.addData("ext Power", robot.mechExt.getPower());
+            telemetry.addData("ext Pos", robot.mechExt.getCurrentPosition());
+            telemetry.update();
 
         }
 
 
 
     }
-
-
-
-
 
 
 }

@@ -414,12 +414,11 @@ public class AutonomCrater_V2 extends LinearOpMode {
         }
         void mineralDisplacement(int[] mineralSequence, String side){
 
-            int goldMineralPosition = -1; //can be 1, 2, 3
-
             int lateralDistance = -3300; //-3200
             int midDistance = -2900; //-2500
             int hittingMineralDistance;
-            int leftPosition = 350, midPosition = 315, rightPosition = 280;
+            int leftPosition = 350, midPosition = 315, rightPosition = 285;
+            int goldMineralPosition = -1; //can be 1, 2, 3
 
             if(side.equals("Depot")){
                 leftPosition = 90;
@@ -459,8 +458,13 @@ public class AutonomCrater_V2 extends LinearOpMode {
             }
 
             robot.setDrivetrainPosition(hittingMineralDistance, "translation", 1);
+
             if(this.side.equals("Crater"))
                 robot.setDrivetrainPosition((-hittingMineralDistance) / 10 * 6, "translation", 1);
+
+
+            this.gettingInLanderPosition(goldMineralPosition);
+
 
 
         }
@@ -531,7 +535,7 @@ public class AutonomCrater_V2 extends LinearOpMode {
 
 
 
-         public void gettingInLanderPosition(){
+         public void gettingInLanderPosition(int goldMineralPosition){
              double proportionalConstant = 1.0 / 60;
              double currentError = 50;
              double outSpeed; // 1->strafing speed (negative for left), 2->forwardSpeed (positive for reverse)
@@ -540,7 +544,7 @@ public class AutonomCrater_V2 extends LinearOpMode {
 
              robot.gyroRotationWIP(45, "absolute", "Crater");
 
-             robot.setDrivetrainPosition(-3000, "translation", 0.8);
+             robot.setDrivetrainPosition(-3500, "translation", 0.8);
 
              robot.gyroRotationWIP(90, "absolute", "Crater");
 
@@ -557,7 +561,7 @@ public class AutonomCrater_V2 extends LinearOpMode {
 
                  outSpeed = proportionalConstant * currentError;
 
-                 outSpeed = Range.clip(outSpeed, -1, 1);
+                 outSpeed = Range.clip(outSpeed, -0.8, 0.8);
 
 
 //                 if(currentDriveTrainPosition - initialDriveTrainPosition < 2600 && currentError <= minDistanceToWall){
@@ -618,33 +622,34 @@ public class AutonomCrater_V2 extends LinearOpMode {
              robot.telemetry.update();
              robot.mecanumMovement(0,0,0);
 
-
-             sleep(1000);
-
+             robot.mechGrab.setPower(robot.MAX_CRSERVO_INPUT);
+            sleep(1000);
+            robot.mechGrab.setPower(0);
              ticksToDepot = -ticksToDepot + robot.driveFrontLeft.getCurrentPosition();
-
-             robot.setDrivetrainPosition(ticksToDepot + 200 , "translation", 1);
-             while(robot.driveRearLeft.getCurrentPosition() > ticksToDepot / 2){
-
+             int offset = 0;
+             if(goldMineralPosition == 1){
+                 offset = -800;
              }
-             Thread mechRotMovement = new Thread(new Runnable() {
-                 @Override
-                 public void run() {
+             else if(goldMineralPosition == 2){
+                 offset = -950;
+             }
+             else if(goldMineralPosition == 3){
+                 offset = -1100;
+             }
+             robot.setDrivetrainPosition(ticksToDepot + offset , "translation", 1);
                      robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                      robot.mechRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
                      robot.mechRotation.setTargetPosition(2000);
                      robot.mechRotation.setPower(1);
-                 }
-             });
-
-             mechRotMovement.start();
              robot.mecanumMovement(0,0,0);
-             try {
-                 mechRotMovement.join();
-             } catch (InterruptedException e) {
-                 e.printStackTrace();
+
+             while(robot.mechRotation.getCurrentPosition() < 2000){
+
              }
+             robot.mechRotation.setPower(0);
+
+                stop();
 
          }
 

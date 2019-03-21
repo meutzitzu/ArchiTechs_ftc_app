@@ -55,7 +55,8 @@ public class Autonom extends LinearOpMode {
 
         //navigateToDeploy();
 
-        new AutonomCrater_V2(robot, null, "Crater").gettingInLanderPosition();
+        stop();
+
 
     }
 
@@ -247,6 +248,10 @@ public class Autonom extends LinearOpMode {
     private void sampleMineral(int[] mineralPosition) {
         int goldMineralPosition = -1;
 
+//        mineralPosition[1] = 0;
+//        mineralPosition[2] = 0;
+//        mineralPosition[3] = 0;
+
         for(int index = 1; index <= 3; index++){
             if(mineralPosition[index] == 2){
                 goldMineralPosition = index;
@@ -275,9 +280,13 @@ public class Autonom extends LinearOpMode {
             telemetry.addLine("rotation: " + robot.globalGyroValue("Crater"));
             telemetry.update();
 
+            int distanceToGoBack = -distanceToTravel / 10 * 5;
+
             robot.setDrivetrainPosition(distanceToTravel, "translation", 1);
 
-            robot.setDrivetrainPosition((-distanceToTravel) / 10 * 6, "translation", 1);
+            robot.setDrivetrainPosition(distanceToGoBack, "translation", 1);
+
+            new AutonomCrater_V2(robot, null, "Crater").gettingInLanderPosition(goldMineralPosition);
         }
 
     }
