@@ -55,9 +55,8 @@ public class Autonom extends LinearOpMode {
 
         //navigateToDeploy();
 
-
-
         stop();
+
 
     }
 
@@ -259,6 +258,7 @@ public class Autonom extends LinearOpMode {
             }
         }
 
+
         if(goldMineralPosition == -1){
             mineralPosition = new int[] {0, 0, 0, 0};
             telemetry.clear();
@@ -287,14 +287,15 @@ public class Autonom extends LinearOpMode {
 
             robot.setDrivetrainPosition(distanceToGoBack, "translation", 1);
 
-            new AutonomCrater_V2(robot, null).gettingInLanderPosition(goldMineralPosition);
+            new AutonomCrater_V2(robot, null, "Crater").gettingInLanderPosition(goldMineralPosition);
         }
 
     }
 
     private void attemptSampleFromGround(int[] mineralPosition) {
 
-        new AutonomCrater_V2(robot, tfod).samplingStuff(mineralPosition);
+        new AutonomCrater_V2(robot, tfod, "Crater").samplingStuff(mineralPosition);
+
 
     }
 

@@ -208,13 +208,43 @@ public class TeleOpMode extends LinearOpMode {
             if (grabberMoving) {
                 robot.mechGrab.setPower(robot.GRABBING_SPEED);
             }
-            if(!grabberMoving){
+            if(!grabberMoving && !gamepad2.dpad_right){
                 robot.mechGrab.setPower(0);
             }
 
-            if(gamepad2.dpad_right){
+
+            if(gamepad2.dpad_down){
                 robot.mechGrab.setPower(-robot.GRABBING_SPEED);
             }
+
+
+
+
+
+            if(gamepad2.dpad_up){
+//                robot.setDriveTrainPostionDIY(1000, "translation", 1);
+                testAngle = 0;
+                robot.mechGrab.setPower(-1);
+            }
+            if(gamepad2.dpad_down){
+//                robot.setDriveTrainPostionDIY(1000, "rotation", 1);
+                testAngle = 180;
+                robot.mechGrab.setPower(1);
+            }
+            if(gamepad2.dpad_right){
+//                robot.setDriveTrainPostionDIY(1000, "strafing", 1);
+                testAngle = 210;
+                robot.mechGrab.setPower(0);
+            }
+
+            if(gamepad1.right_bumper){
+                robot.mechExt.setPower(0.5);
+            }
+            else if(gamepad1.left_bumper){
+                robot.mechExt.setPower(-0.5);
+            }
+            else
+                robot.mechExt.setPower(0);
 
 
 
@@ -320,6 +350,22 @@ public class TeleOpMode extends LinearOpMode {
             else{
                 robot.mechExt.setPower(0);
             }
+            if(gamepad1.dpad_left){
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        robot.mechLiftLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        robot.mechLiftRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        robot.mechLiftLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        robot.mechLiftRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        while(robot.mechLiftLeft.getCurrentPosition() > robot.MIN_LIFT_POSITION &&
+                                robot.mechLiftRight.getCurrentPosition() > robot.MIN_LIFT_POSITION && !isStopRequested()){
+                            robot.liftMovement(-robot.LIFT_SPEED, false);
+                        }
+                        robot.liftMovement(0, false);
+                    }
+                }).start();
+            }
 
 
 
@@ -328,13 +374,8 @@ public class TeleOpMode extends LinearOpMode {
             telemetry.addData("rot Power", robot.mechRotation.getPower());
             telemetry.addData("ext Power", robot.mechExt.getPower());
             telemetry.addData("ext Pos", robot.mechExt.getCurrentPosition());
+            telemetry.addData("distance sensor", robot.leftDistanceSensor.getDistance(DistanceUnit.CM));
             telemetry.update();
-
-//            telemetry.addData("sensor back", robot.rightDistanceSensor.getDistance(DistanceUnit.CM));
-//            telemetry.addData("sensor side", robot.leftDistanceSensor.getDistance(DistanceUnit.CM));
-//            telemetry.addData("lift left", robot.mechLiftLeft.getCurrentPosition());
-//            telemetry.addData("lift right", robot.mechLiftRight.getCurrentPosition());
-//            telemetry.addData("drivetrain pos", robot.driveFrontLeft.getCurrentPosition());
 
         }
 
