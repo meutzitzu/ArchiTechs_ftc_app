@@ -246,13 +246,14 @@ public class Autonom2 extends LinearOpMode {
     }
 
     private void sampleMineral(int[] mineralPosition) {
-        int goldMineralPosition = -1;
+        int goldMineralPosition;
 
         for (int index = 1; index <= 3; index++) {
             if (mineralPosition[index] == 2) {
                 goldMineralPosition = index;
             }
         }
+
         goldMineralPosition = -1;
         FINAL_GOLD_MINERAL_POSITION = goldMineralPosition;
         if (goldMineralPosition == -1) {

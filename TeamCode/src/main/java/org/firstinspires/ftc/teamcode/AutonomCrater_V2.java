@@ -386,10 +386,7 @@ public class AutonomCrater_V2 extends LinearOpMode {
 
             robot.telemetry.addData("order", mineralSequence[1] + " " + mineralSequence[2] + " " + mineralSequence[3]);
             robot.telemetry.update();
-
-            while(robot.opMode.opModeIsActive()){
-
-            }
+            
 
 
             for(int i = 1;i <=3; i++){
@@ -628,13 +625,13 @@ public class AutonomCrater_V2 extends LinearOpMode {
              ticksToDepot = -ticksToDepot + robot.driveFrontLeft.getCurrentPosition();
              int offset = 0;
              if(goldMineralPosition == 1){
-                 offset = -800;
+                 offset = 500;
              }
              else if(goldMineralPosition == 2){
-                 offset = -950;
+                 offset = 650;
              }
              else if(goldMineralPosition == 3){
-                 offset = -1100;
+                 offset = 700;
              }
              robot.setDrivetrainPosition(ticksToDepot + offset , "translation", 1);
                      robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
