@@ -264,7 +264,7 @@ public class Autonom2 extends LinearOpMode {
             int distanceToTravel;
             switch (goldMineralPosition) {
                 case 1:
-                    robot.gyroRotationWIP(90, "absolute", "Deploy");
+                    robot.gyroRotationWIP(80, "absolute", "Deploy");
                     distanceToTravel = -3300;
                     break;
                 case 2:
@@ -272,8 +272,8 @@ public class Autonom2 extends LinearOpMode {
                     distanceToTravel = -2900;
                     break;
                 case 3:
-                    robot.gyroRotationWIP(180, "absolute", "Deploy");
-                    distanceToTravel = +3300;
+                    robot.gyroRotationWIP(10, "absolute", "Deploy");
+                    distanceToTravel = -3300;
                     break;
                 default:
                     distanceToTravel = 0;
@@ -281,19 +281,18 @@ public class Autonom2 extends LinearOpMode {
             robot.setDrivetrainPosition(distanceToTravel, "translation", 1);
 
             if(FINAL_GOLD_MINERAL_POSITION == 3) {
-                robot.gyroRotationWIP(180, "absolute", "Deploy");
-                robot.setDrivetrainPosition(-distanceToTravel - 300, "translation", 1);
-                robot.gyroRotationWIP(0, "absolute", "Deploy");
-                robot.setDrivetrainPosition(-4500, "strafing", 1);
+                robot.setDrivetrainPosition(-(distanceToTravel - 500), "translation", 1);
+                robot.setDrivetrainPosition(-5000, "strafing", 1);
                 robot.gyroRotationWIP(0, "absolute", "Deploy");
                 while(robot.rightDistanceSensor.getDistance(DistanceUnit.CM) > 60){
                     robot.mecanumMovement(0, 1, 0);
                 }
-                
+                robot.gyroRotationWIP(0, "absolute", "Deploy");
+
                 robot.mecanumMovement(0, 0, 0);
-                robot.mechRotation.setPower(-1);
+                robot.mechGrab.setPower(-1);
                 sleep(1000);
-                robot.mechRotation.setPower(0);
+                robot.mechGrab.setPower(0);
                 
                 moveToCrater();
 
@@ -306,6 +305,7 @@ public class Autonom2 extends LinearOpMode {
     }
 
     private void moveToCrater() {
+        robot.setDrivetrainPosition(6800, "translation", 1);
     }
 
 
