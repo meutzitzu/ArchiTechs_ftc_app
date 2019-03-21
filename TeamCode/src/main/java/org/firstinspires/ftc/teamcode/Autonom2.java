@@ -230,9 +230,9 @@ public class Autonom2 extends LinearOpMode {
 
         robot.liftMovement(0, false);
 
-        robot.setDrivetrainPosition(-500, "translation", 1);
+        robot.setDrivetrainPosition(-500, "translation", .6);
         robot.setDrivetrainPosition(800, "strafing", .6);
-        robot.setDrivetrainPosition(500, "translation", 1);
+        robot.setDrivetrainPosition(500, "translation", .6);
 
         try {
             sampleMineral(mineralPosition.get());
@@ -246,7 +246,7 @@ public class Autonom2 extends LinearOpMode {
     }
 
     private void sampleMineral(int[] mineralPosition) {
-        int goldMineralPosition;
+        int goldMineralPosition = -1;
 
         for (int index = 1; index <= 3; index++) {
             if (mineralPosition[index] == 2) {
@@ -254,7 +254,6 @@ public class Autonom2 extends LinearOpMode {
             }
         }
 
-        goldMineralPosition = -1;
         FINAL_GOLD_MINERAL_POSITION = goldMineralPosition;
         if (goldMineralPosition == -1) {
             mineralPosition = new int[]{0, 0, 0, 0};
@@ -279,33 +278,42 @@ public class Autonom2 extends LinearOpMode {
                     distanceToTravel = 0;
             }
             robot.setDrivetrainPosition(distanceToTravel, "translation", 1);
-
-            if(FINAL_GOLD_MINERAL_POSITION == 3) {
-                robot.setDrivetrainPosition(-(distanceToTravel - 500), "translation", 1);
-                robot.setDrivetrainPosition(-5000, "strafing", 1);
-                robot.gyroRotationWIP(0, "absolute", "Deploy");
-                while(robot.rightDistanceSensor.getDistance(DistanceUnit.CM) > 60){
-                    robot.mecanumMovement(0, 1, 0);
-                }
-                robot.gyroRotationWIP(0, "absolute", "Deploy");
-
-                robot.mecanumMovement(0, 0, 0);
-                robot.mechGrab.setPower(-1);
-                sleep(1000);
-                robot.mechGrab.setPower(0);
-                
-                moveToCrater();
-
-
-                return;
-            }
-
         }
+
+        if(FINAL_GOLD_MINERAL_POSITION == 3) {
+            robot.setDrivetrainPosition(3800, "translation", 1);
+            robot.gyroRotationWIP(0, "absolute", "Deploy");
+            robot.setDrivetrainPosition(-5200, "strafing", 1);
+            robot.gyroRotationWIP(0, "absolute", "Deploy");
+
+        } else if (FINAL_GOLD_MINERAL_POSITION == 2){
+            robot.setDrivetrainPosition(-2000, "translation", 1);
+            robot.gyroRotationWIP(0, "absolute", "Deploy");
+            robot.setDrivetrainPosition(-2500, "strafing", 1);
+        } else if (FINAL_GOLD_MINERAL_POSITION == 1){
+            robot.gyroRotationWIP(0, "absolute", "Deploy");
+            robot.setDrivetrainPosition(-2200, "strafing", 1);
+            robot.gyroRotationWIP(0, "absolute", "Deploy");
+        }
+
+
+        while(robot.rightDistanceSensor.getDistance(DistanceUnit.CM) > 60){
+            robot.mecanumMovement(0, 1, 0);
+        }
+        robot.gyroRotationWIP(0, "absolute", "Deploy");
+
+        robot.mecanumMovement(0, 0, 0);
+        robot.mechGrab.setPower(robot.GRABBING_SPEED);
+        sleep(1000);
+        robot.mechGrab.setPower(0);
+
+        moveToCrater(6800);
+
 
     }
 
-    private void moveToCrater() {
-        robot.setDrivetrainPosition(6800, "translation", 1);
+    private void moveToCrater(int ticks) {
+        robot.setDrivetrainPosition(ticks, "translation", 1);
     }
 
 

@@ -350,12 +350,29 @@ public class TeleOpMode extends LinearOpMode {
                     extThread.start();
                 }
             }
+            if(gamepad1.dpad_left){
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        robot.mechLiftLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        robot.mechLiftRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        robot.mechLiftLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        robot.mechLiftRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        while(robot.mechLiftLeft.getCurrentPosition() > robot.MIN_LIFT_POSITION &&
+                                robot.mechLiftRight.getCurrentPosition() > robot.MIN_LIFT_POSITION && !isStopRequested()){
+                            robot.liftMovement(-robot.LIFT_SPEED, false);
+                        }
+                        robot.liftMovement(0, false);
+                    }
+                }).start();
+            }
 
             
             telemetry.addData("rot position", robot.mechRotation.getCurrentPosition());
             telemetry.addData("rot Power", robot.mechRotation.getPower());
             telemetry.addData("ext Power", robot.mechExt.getPower());
             telemetry.addData("ext Pos", robot.mechExt.getCurrentPosition());
+            telemetry.addData("distance sensor", robot.leftDistanceSensor.getDistance(DistanceUnit.CM));
             telemetry.update();
 
         }
