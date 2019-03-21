@@ -206,6 +206,10 @@ public class TeleOpMode extends LinearOpMode {
                 robot.mechGrab.setPower(0);
             }
 
+            if(gamepad2.dpad_down){
+                robot.mechGrab.setPower(-robot.GRABBING_SPEED);
+            }
+
 
 
 
@@ -213,14 +217,17 @@ public class TeleOpMode extends LinearOpMode {
             if(gamepad2.dpad_up){
 //                robot.setDriveTrainPostionDIY(1000, "translation", 1);
                 testAngle = 0;
+                robot.mechGrab.setPower(-1);
             }
             if(gamepad2.dpad_down){
 //                robot.setDriveTrainPostionDIY(1000, "rotation", 1);
                 testAngle = 180;
+                robot.mechGrab.setPower(1);
             }
             if(gamepad2.dpad_right){
 //                robot.setDriveTrainPostionDIY(1000, "strafing", 1);
                 testAngle = 210;
+                robot.mechGrab.setPower(0);
             }
             if(gamepad2.dpad_left){
                 testAngle = 30;
@@ -231,9 +238,9 @@ public class TeleOpMode extends LinearOpMode {
 //            telemetry.addData("sensor side", robot.leftDistanceSensor.getDistance(DistanceUnit.CM));
 //            telemetry.addData("lift left", robot.mechLiftLeft.getCurrentPosition());
 //            telemetry.addData("lift right", robot.mechLiftRight.getCurrentPosition());
-//            telemetry.addData("drivetrain pos", robot.driveFrontLeft.getCurrentPosition());
 
-            //telemetry.update();
+            telemetry.addData("drivetrain pos", robot.driveFrontLeft.getCurrentPosition());
+            telemetry.update();
 
         }
 

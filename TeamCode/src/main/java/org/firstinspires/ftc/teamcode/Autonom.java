@@ -253,6 +253,8 @@ public class Autonom extends LinearOpMode {
             }
         }
 
+        goldMineralPosition = -1;
+
         if(goldMineralPosition == -1){
             mineralPosition = new int[] {0, 0, 0, 0};
             telemetry.clear();
