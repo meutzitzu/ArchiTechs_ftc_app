@@ -314,12 +314,14 @@ public class TeleOpMode extends LinearOpMode {
             }
 
             if(gamepad2.dpad_down){
-                if(!extThread.isAlive()) {
-                    extPid = new PID(robot.mechExt, 1400, 1.0 / 100, 0, 1.0 / 1000, robot.opMode, telemetry, true);
-                    extThread = new Thread(extPid);
-                    extThread.start();
-                }
+                robot.mechExt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                robot.mechExt.setPower(0.5);
             }
+            else{
+                robot.mechExt.setPower(0);
+            }
+
+
 
             
             telemetry.addData("rot position", robot.mechRotation.getCurrentPosition());
