@@ -343,10 +343,7 @@ public class TeleOpMode extends LinearOpMode {
 
             
           telemetry.addData("rot position", robot.mechRotation.getCurrentPosition());
-           telemetry.addData("rot Power", robot.mechRotation.getPower());
-//           telemetry.addData("going up", armGoingUp);
-//            telemetry.addData("ext Power", robot.mechExt.getPower());
-//           telemetry.addData("ext Pos", robot.mechExt.getCurrentPosition());
+           telemetry.addData("ext Pos", robot.mechExt.getCurrentPosition());
 ////            telemetry.addData("distance sensor", robot.rightDistanceSensor.getDistance(DistanceUnit.CM));
          telemetry.update();
 

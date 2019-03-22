@@ -908,7 +908,7 @@ public class Robot {
                 this.mechRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             }
 
-            if(Math.abs(this.mechRotation.getCurrentPosition()) < 50 && Math.abs(this.mechExt.getCurrentPosition() - 4000) < 100){
+            if(Math.abs(this.mechRotation.getCurrentPosition()) < 200 && Math.abs(this.mechExt.getCurrentPosition() - 4000) < 100){
                 return false;
             }
             return true;
