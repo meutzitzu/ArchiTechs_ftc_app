@@ -364,7 +364,18 @@ public class TeleOpMode extends LinearOpMode {
                 telemetry.addLine("gets in manual");
                 robot.mechExt.setPower(mechExtSpeed);
             }
-
+            if(gamepad2.right_stick_y != 0){
+                if(robot.mechRotation.getMode() != DcMotor.RunMode.RUN_USING_ENCODER) {
+                    robot.mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    robot.mechRotation.setPower(0);
+                }
+                robot.mechRotation.setPower(gamepad2.right_stick_y);
+            }
+            if(gamepad2.right_bumper){
+                robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                robot.mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                robot.mechRotation.setPower(0);
+            }
 
             
           telemetry.addData("rot position", robot.mechRotation.getCurrentPosition());
