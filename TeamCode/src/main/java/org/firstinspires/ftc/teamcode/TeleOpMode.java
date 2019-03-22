@@ -173,21 +173,9 @@ public class TeleOpMode extends LinearOpMode {
 
 
 
-            //Extension of the arm
+            //Manual extension of the arm
             //gamepad2 -> left_trigger , right_trigger
 
-//            if(gamepad2.left_trigger == 0 && gamepad2.right_trigger == 0){
-//                mechExtSpeed = 0;
-//            }
-//            if(gamepad2.left_trigger > 0){
-//                mechExtSpeed = 0;
-//            }
-//            else if(gamepad2.right_trigger > 0){
-//                mechExtSpeed = 1400;
-//            }
-//
-//            robot.mechExt.setTargetPosition((int)mechExtSpeed);
-//            robot.mechExt.setPower(0.8);
 
 
 
@@ -217,33 +205,6 @@ public class TeleOpMode extends LinearOpMode {
             }
 
 
-
-
-
-            if(gamepad2.dpad_up){
-//                robot.setDriveTrainPostionDIY(1000, "translation", 1);
-                testAngle = 0;
-                robot.mechGrab.setPower(-1);
-            }
-            if(gamepad2.dpad_down){
-//                robot.setDriveTrainPostionDIY(1000, "rotation", 1);
-                testAngle = 180;
-                robot.mechGrab.setPower(1);
-            }
-            if(gamepad2.dpad_right){
-//                robot.setDriveTrainPostionDIY(1000, "strafing", 1);
-                testAngle = 210;
-                robot.mechGrab.setPower(0);
-            }
-
-            if(gamepad1.right_bumper){
-                robot.mechExt.setPower(0.5);
-            }
-            else if(gamepad1.left_bumper){
-                robot.mechExt.setPower(-0.5);
-            }
-            else
-                robot.mechExt.setPower(0);
 
 
 
@@ -314,6 +275,23 @@ public class TeleOpMode extends LinearOpMode {
             else{
                 armUp = false;
                 armDown = false;
+
+                if(robot.mechExt.getMode() != DcMotor.RunMode.RUN_USING_ENCODER){
+                    robot.mechExt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                }
+
+                if(gamepad2.left_trigger == 0 && gamepad2.right_trigger == 0){
+                    mechExtSpeed = 0;
+                }
+                else if(gamepad2.left_trigger > 0){
+                    mechExtSpeed = gamepad2.left_trigger;
+                }
+                else if(gamepad2.right_trigger > 0){
+                    mechExtSpeed = -gamepad2.right_trigger;
+                }
+
+                robot.mechExt.setPower(mechExtSpeed);
+
             }
 
             if(!armUp){
@@ -352,10 +330,10 @@ public class TeleOpMode extends LinearOpMode {
 //           telemetry.addData("rot position", robot.mechRotation.getCurrentPosition());
 //           telemetry.addData("rot Power", robot.mechRotation.getPower());
 //           telemetry.addData("going up", armGoingUp);
-////            telemetry.addData("ext Power", robot.mechExt.getPower());
-////            telemetry.addData("ext Pos", robot.mechExt.getCurrentPosition());
+            telemetry.addData("ext Power", robot.mechExt.getPower());
+           telemetry.addData("ext Pos", robot.mechExt.getCurrentPosition());
 ////            telemetry.addData("distance sensor", robot.rightDistanceSensor.getDistance(DistanceUnit.CM));
-//          telemetry.update();
+         telemetry.update();
 
         }
 
