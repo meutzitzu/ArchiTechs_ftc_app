@@ -852,25 +852,23 @@ public class Robot {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    robot.mechExt.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    robot.mechRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    boolean startedExtension = false;
+                    if(robot.mechRotation.getMode() != DcMotor.RunMode.RUN_USING_ENCODER ||
+                            robot.mechExt.getMode() != DcMotor.RunMode.RUN_USING_ENCODER){
+                        robot.mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                        robot.mechExt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    }
+
                     while(robot.mechExt.getCurrentPosition() > 600){
-                        robot.mechExt.setPower(-.6);
-                        if(!startedExtension && robot.mechExt.getCurrentPosition() < 4000){
-                            startedExtension = true;
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    while(robot.mechRotation.getCurrentPosition() > 100){
-                                        robot.mechRotation.setPower(-.7);
-                                    }
-                                    robot.mechRotation.setPower(0);
-                                }
-                            }).start();
-                        }
+                        robot.mechExt.setPower(-0.7);
+                        if(robot.mechExt.getCurrentPosition() < 7000 && robot.mechRotation.getCurrentPosition() > 100)
+                            robot.mechRotation.setPower(-.7);
                     }
                     robot.mechExt.setPower(0);
+
+                    while(robot.mechRotation.getCurrentPosition() > 100){
+                        robot.mechRotation.setPower(-.7);
+                    }
+                    robot.mechRotation.setPower(0);
                 }
             }).start();
 
