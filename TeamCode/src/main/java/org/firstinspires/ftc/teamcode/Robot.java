@@ -798,7 +798,7 @@ public class Robot {
         public boolean rotatingUp(){
 
 
-            extPidOut = new PID(this.mechExt, 1400, 1.0 / 2800, 0, 0, this.opMode, this.telemetry, true);
+
 
             if(armThread == null){
                 armPidUp = new PID(this.mechRotation, -1400, 1.0 / 700, 0, 0 ,this.opMode, this.telemetry, true);
@@ -810,6 +810,10 @@ public class Robot {
             if(extThreadIn == null){
                 extPidIn = new PID (this.mechExt, 0, 0, 0, 0 , this.opMode, this.telemetry, true);
                 extPidIn.stop = false;
+
+                extThreadIn = new Thread(extPidIn);
+                extThreadIn.start();
+
             }
 
             extThreadOut = new Thread(extPidOut);
@@ -821,10 +825,6 @@ public class Robot {
                 armThread = new Thread(armPidUp);
                 armThread.start();
             }
-            else if(Math.abs(this.mechRotation.getCurrentPosition() + 1400) <= 50){
-                armPidUp.stop = true;
-
-            }
 
             if(this.mechRotation.getCurrentPosition() < -100){
                 if(!extThreadIn.isAlive()){
@@ -834,9 +834,13 @@ public class Robot {
             }
 
 
-            if(Math.abs(this.mechRotation.getCurrentPosition() + 1400) < 50 && Math.abs(this.mechExt.getCurrentPosition()) < 50){
-                return false;
+            if(Math.abs(this.mechRotation.getCurrentPosition() + 1400) < 50){
+                armPidUp.stop = true;
+                extPidIn.stop = true;
 
+                extPidOut = new PID(this.mechExt, 1400, 1.0 / 2800, 0, 0, this.opMode, this.telemetry, true);
+
+                return false;
             }
 
             return true;
@@ -844,7 +848,6 @@ public class Robot {
         }
 
         public boolean rotatingDown(){
-
             final Robot robot = this;
             new Thread(new Runnable() {
                 @Override
@@ -870,6 +873,7 @@ public class Robot {
                     robot.mechExt.setPower(0);
                 }
             }).start();
+
 
             if(Math.abs(this.mechRotation.getCurrentPosition()) < 50 && Math.abs(this.mechExt.getCurrentPosition() - 500) < 50){
                 return false;
