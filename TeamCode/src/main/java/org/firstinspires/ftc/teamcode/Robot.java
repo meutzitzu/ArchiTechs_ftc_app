@@ -801,42 +801,46 @@ public class Robot {
 
 
             if(armThread == null){
-                armPidUp = new PID(this.mechRotation, -1400, 1.0 / 700, 0, 0 ,this.opMode, this.telemetry, true);
+                armPidUp = new PID(this.mechRotation, -1500, 1.0 / 700, 0, 0 ,this.opMode, this.telemetry, true);
                 armPidUp.stop = false;
                 armThread = new Thread(armPidUp);
                 armThread.start();
             }
 
-            if(extThreadIn == null){
-                extPidIn = new PID (this.mechExt, 0, 0, 0, 0 , this.opMode, this.telemetry, true);
-                extPidIn.stop = false;
-                extThreadIn = new Thread(extPidIn);
-                extThreadIn.start();
+//            if(extThreadIn == null){
+//                extPidIn = new PID (this.mechExt, 0, 0, 0, 0 , this.opMode, this.telemetry, true);
+//                extPidIn.stop = false;
+//                extThreadIn = new Thread(extPidIn);
+//                extThreadIn.start();
+//            }
+
+            if(extThreadOut == null){
+                extPidOut = new PID(this.mechExt, 11000, 0.8 / 3000, 0, 0, this.opMode, this.telemetry, true);
+                extPidOut.stop = false;
+                extThreadOut = new Thread(extPidOut);
             }
 
-            extThreadOut = new Thread(extPidOut);
-            extThreadIn = new Thread(extPidIn);
 
             if(!armThread.isAlive() && Math.abs(this.mechRotation.getCurrentPosition() + 1400) > 50){
-                armPidUp = new PID(this.mechRotation, -1400, 1.0 / 1200, 0, 0 ,this.opMode, this.telemetry, true);
+                armPidUp = new PID(this.mechRotation, -1500, 1.0 / 1200, 0, 0 ,this.opMode, this.telemetry, true);
                 armPidUp.stop = false;
                 armThread = new Thread(armPidUp);
                 armThread.start();
             }
 
-            if(this.mechRotation.getCurrentPosition() < -100){
-                if(!extThreadIn.isAlive()){
-                    extPidIn.stop = false;
-                    extThreadIn.start();
+            if(this.mechRotation.getCurrentPosition() < -900){
+                if(!extThreadOut.isAlive()){
+                    extPidOut.stop = false;
+                    extThreadOut.start();
                 }
             }
 
 
-            if(Math.abs(this.mechRotation.getCurrentPosition() + 1400) < 50){
+            if(Math.abs(this.mechRotation.getCurrentPosition() + 1500) < 50 && Math.abs(this.mechExt.getCurrentPosition() - 11000) < 100){
                 armPidUp.stop = true;
                 extPidIn.stop = true;
+                extPidOut.stop = true;
 
-                extPidOut = new PID(this.mechExt, 1400, 1.0 / 2800, 0, 0, this.opMode, this.telemetry, true);
 
                 return false;
             }
