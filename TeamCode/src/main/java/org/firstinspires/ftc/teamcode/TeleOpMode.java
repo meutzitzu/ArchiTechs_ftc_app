@@ -299,23 +299,6 @@ public class TeleOpMode extends LinearOpMode {
             else{
                 armUp = false;
                 armDown = false;
-
-                if(robot.mechExt.getMode() != DcMotor.RunMode.RUN_USING_ENCODER){
-                    robot.mechExt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                }
-
-                if(gamepad2.left_trigger == 0 && gamepad2.right_trigger == 0){
-                    mechExtSpeed = 0;
-                }
-                else if(gamepad2.left_trigger > 0){
-                    mechExtSpeed = gamepad2.left_trigger;
-                }
-                else if(gamepad2.right_trigger > 0){
-                    mechExtSpeed = -gamepad2.right_trigger;
-                }
-
-                robot.mechExt.setPower(mechExtSpeed);
-
             }
 
             if(!armUp){
@@ -348,17 +331,25 @@ public class TeleOpMode extends LinearOpMode {
                 inputWaitingTimeDown.reset();
                 armGoingDown = robot.rotatingDown();
             }
+            else{
+                if(robot.mechExt.getMode() != DcMotor.RunMode.RUN_USING_ENCODER){
+                    robot.mechExt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                }
+
+                if(gamepad2.left_trigger == 0 && gamepad2.right_trigger == 0){
+                    mechExtSpeed = 0;
+                }
+                else if(gamepad2.left_trigger > 0){
+                    mechExtSpeed = gamepad2.left_trigger;
+                }
+                else if(gamepad2.right_trigger > 0){
+                    mechExtSpeed = -gamepad2.right_trigger;
+                }
+
+                robot.mechExt.setPower(mechExtSpeed);
+            }
 
 
-            
-//           telemetry.addData("rot position", robot.mechRotation.getCurrentPosition());
-//           telemetry.addData("rot Power", robot.mechRotation.getPower());
-//           telemetry.addData("going up", armGoingUp);
-            telemetry.addData("ext Power", robot.mechExt.getPower());
-           telemetry.addData("ext Pos", robot.mechExt.getCurrentPosition());
-           telemetry.addData("mechRot", robot.mechRotation.getCurrentPosition());
-////            telemetry.addData("distance sensor", robot.rightDistanceSensor.getDistance(DistanceUnit.CM));
-         telemetry.update();
 
         }
 

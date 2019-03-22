@@ -801,44 +801,48 @@ public class Robot {
 
 
             if(armThread == null){
-                armPidUp = new PID(this.mechRotation, -1400, 1.0 / 700, 0, 0 ,this.opMode, this.telemetry, true);
+                armPidUp = new PID(this.mechRotation, -1500, 1.0 / 700, 0, 0 ,this.opMode, this.telemetry, true);
                 armPidUp.stop = false;
                 armThread = new Thread(armPidUp);
                 armThread.start();
             }
 
-            if(extThreadIn == null){
-                extPidIn = new PID (this.mechExt, 0, 0, 0, 0 , this.opMode, this.telemetry, true);
-                extPidIn.stop = false;
 
-                extThreadIn = new Thread(extPidIn);
-                extThreadIn.start();
+//            if(extThreadIn == null){
+//                extPidIn = new PID (this.mechExt, 0, 0, 0, 0 , this.opMode, this.telemetry, true);
+//                extPidIn.stop = false;
+//                extThreadIn = new Thread(extPidIn);
+//                extThreadIn.start();
+//            }
+
+            if(extThreadOut == null){
+                extPidOut = new PID(this.mechExt, 11000, 0.8 / 3000, 0, 0, this.opMode, this.telemetry, true);
+                extPidOut.stop = false;
+                extThreadOut = new Thread(extPidOut);
 
             }
 
-            extThreadOut = new Thread(extPidOut);
-            extThreadIn = new Thread(extPidIn);
 
             if(!armThread.isAlive() && Math.abs(this.mechRotation.getCurrentPosition() + 1400) > 50){
-                armPidUp = new PID(this.mechRotation, -1400, 1.0 / 1200, 0, 0 ,this.opMode, this.telemetry, true);
+                armPidUp = new PID(this.mechRotation, -1500, 1.0 / 1200, 0, 0 ,this.opMode, this.telemetry, true);
                 armPidUp.stop = false;
                 armThread = new Thread(armPidUp);
                 armThread.start();
             }
 
-            if(this.mechRotation.getCurrentPosition() < -100){
-                if(!extThreadIn.isAlive()){
-                    extPidIn.stop = false;
-                    extThreadIn.start();
+            if(this.mechRotation.getCurrentPosition() < -900){
+                if(!extThreadOut.isAlive()){
+                    extPidOut.stop = false;
+                    extThreadOut.start();
                 }
             }
 
 
-            if(Math.abs(this.mechRotation.getCurrentPosition() + 1400) < 50){
+            if(Math.abs(this.mechRotation.getCurrentPosition() + 1500) < 50 && Math.abs(this.mechExt.getCurrentPosition() - 11000) < 100){
                 armPidUp.stop = true;
                 extPidIn.stop = true;
+                extPidOut.stop = true;
 
-                extPidOut = new PID(this.mechExt, 1400, 1.0 / 2800, 0, 0, this.opMode, this.telemetry, true);
 
                 return false;
             }
@@ -849,29 +853,21 @@ public class Robot {
 
         public boolean rotatingDown(){
             final Robot robot = this;
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    if(robot.mechRotation.getMode() != DcMotor.RunMode.RUN_USING_ENCODER ||
-                            robot.mechExt.getMode() != DcMotor.RunMode.RUN_USING_ENCODER){
-                        robot.mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                        robot.mechExt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    }
+            while(robot.mechExt.getCurrentPosition() > 600){
+                robot.mechExt.setPower(-.7);
+                robot.telemetry.addData("mechExt pos:", robot.mechExt.getCurrentPosition());
+            }
+            robot.telemetry.addLine("Extension done!");
+            robot.mechExt.setPower(0);
 
-                    while(robot.mechExt.getCurrentPosition() > 600){
-                        robot.mechExt.setPower(-0.7);
-                        if(robot.mechExt.getCurrentPosition() < 7000 && robot.mechRotation.getCurrentPosition() > 100)
-                            robot.mechRotation.setPower(-.7);
-                    }
-                    robot.mechExt.setPower(0);
+            while(robot.mechRotation.getCurrentPosition() > 100){
+                robot.mechRotation.setPower(-.7);
+                robot.telemetry.addData("mechRot pos: ", robot.mechRotation.getCurrentPosition());
+            }
 
-                    while(robot.mechRotation.getCurrentPosition() > 100){
-                        robot.mechRotation.setPower(-.7);
-                    }
-                    robot.mechRotation.setPower(0);
-                }
-            }).start();
-
+            robot.mechRotation.setPower(0);
+            robot.telemetry.addLine("rotation done");
+            robot.telemetry.update();
 
             if(Math.abs(this.mechRotation.getCurrentPosition()) < 50 && Math.abs(this.mechExt.getCurrentPosition() - 500) < 50){
                 return false;
