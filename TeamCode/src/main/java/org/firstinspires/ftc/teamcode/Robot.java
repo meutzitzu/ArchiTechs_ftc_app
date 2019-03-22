@@ -797,59 +797,61 @@ public class Robot {
 
         public boolean rotatingUp(){
 
-
-
-
-            if(armThread == null){
-                armPidUp = new PID(this.mechRotation, -1500, 1.0 / 700, 0, 0 ,this.opMode, this.telemetry, true);
-                armPidUp.stop = false;
-                armThread = new Thread(armPidUp);
-                armThread.start();
+            if(this.armPidDown != null){
+                armPidDown.stop = true;
+            }
+            if(this.extThreadIn != null){
+                extPidIn.stop = true;
             }
 
 
-//            if(extThreadIn == null){
-//                extPidIn = new PID (this.mechExt, 0, 0, 0, 0 , this.opMode, this.telemetry, true);
-//                extPidIn.stop = false;
-//                extThreadIn = new Thread(extPidIn);
-//                extThreadIn.start();
-//            }
-
-            if(extThreadOut == null){
-                extPidOut = new PID(this.mechExt, 11000, 0.8 / 3000, 0, 0, this.opMode, this.telemetry, true);
-                extPidOut.stop = false;
-                extThreadOut = new Thread(extPidOut);
-
+            if(this.armThread == null){
+                this.armPidUp = new PID(this.mechRotation, -1570, 1.0 / 1800, 0, 0 ,this.opMode, this.telemetry, true);
+                this.armPidUp.stop = false;
+                this.armThread = new Thread(armPidUp);
+                this.armThread.start();
             }
 
 
-            if(!armThread.isAlive() && Math.abs(this.mechRotation.getCurrentPosition() + 1400) > 50){
-                armPidUp = new PID(this.mechRotation, -1500, 1.0 / 1200, 0, 0 ,this.opMode, this.telemetry, true);
-                armPidUp.stop = false;
-                armThread = new Thread(armPidUp);
-                armThread.start();
+            if(this.extThreadOut == null){
+                this.extPidOut = new PID(this.mechExt, 10000, 0.8 / 3000, 0, 0, this.opMode, this.telemetry, true);
+                this.extPidOut.stop = false;
+                this.extThreadOut = new Thread(extPidOut);
             }
 
-            if(this.mechRotation.getCurrentPosition() < -900){
-                if(!extThreadOut.isAlive()){
-                    extPidOut.stop = false;
-                    extThreadOut.start();
+
+            if(!this.armThread.isAlive() && Math.abs(this.mechRotation.getCurrentPosition() + 1400) > 50){
+                this.armPidUp = new PID(this.mechRotation, -1570, 1.0 / 1800, 0, 0 ,this.opMode, this.telemetry, true);
+                this.armPidUp.stop = false;
+                this.armThread = new Thread(armPidUp);
+                this.armThread.start();
+            }
+
+            if(this.mechRotation.getCurrentPosition() > -300){
+                this.mechGrab.setPower(this.GRABBING_SPEED);
+            }
+
+            if(this.mechRotation.getCurrentPosition() < -300){
+                if(!this.extThreadOut.isAlive()){
+                    this.extPidOut = new PID(this.mechExt, 10000, 0.8 / 1000, 0, 0, this.opMode, this.telemetry, true);
+                    this.extPidOut.stop = false;
+                    this.extThreadOut = new Thread(extPidOut);
+                    this.extThreadOut.start();
                 }
             }
 
 
-            if(Math.abs(this.mechRotation.getCurrentPosition() + 1500) < 50 && Math.abs(this.mechExt.getCurrentPosition() - 11000) < 100){
-                armPidUp.stop = true;
-                extPidIn.stop = true;
-                extPidOut.stop = true;
-
-
+            if(Math.abs(this.mechRotation.getCurrentPosition() + 1570) < 50 && Math.abs(this.mechExt.getCurrentPosition() - 10000) < 100){
                 return false;
             }
 
             return true;
 
         }
+
+        PID armPidDown = null;
+
+        Thread armThreadDown = null;
 
         public boolean rotatingDown(){
             final Robot robot = this;
@@ -860,19 +862,61 @@ public class Robot {
             robot.telemetry.addLine("Extension done!");
             robot.mechExt.setPower(0);
 
-            while(robot.mechRotation.getCurrentPosition() > 100){
-                robot.mechRotation.setPower(-.7);
-                robot.telemetry.addData("mechRot pos: ", robot.mechRotation.getCurrentPosition());
+
+//            if(this.armPidUp != null){
+//                armPidUp.stop = true;
+//            }
+            if(this.extPidOut != null){
+                this.extPidOut.stop = true;
             }
 
-            robot.mechRotation.setPower(0);
-            robot.telemetry.addLine("rotation done");
-            robot.telemetry.update();
+            if(this.extThreadIn == null){
+                this.extPidIn = new PID(this.mechExt, 4000, 1.0 / 3000, 0, 0, this.opMode, this.telemetry, true);
+                this.extPidIn.stop = false;
+                this.extThreadIn = new Thread(extPidIn);
+                this.extThreadIn.start();
+            }
+            if(!this.extThreadIn.isAlive()){
+                this.extPidIn = new PID(this.mechExt, 4000, 1.0 / 3000, 0, 0, this.opMode, this.telemetry, true);
+                this.extPidIn.stop = false;
+                this.extThreadIn = new Thread(extPidIn);
+                this.extThreadIn.start();
+            }
 
-            if(Math.abs(this.mechRotation.getCurrentPosition()) < 50 && Math.abs(this.mechExt.getCurrentPosition() - 500) < 50){
+//            if(armThreadDown == null){
+//                this.armPidDown = new PID(this.mechRotation, 10, 1.0 / 3000, 1.0 / 10000, 0, this.opMode, this.telemetry, false);
+//                this.armPidDown.stop = false;
+//                this.armThreadDown = new Thread(armPidDown);
+//            }
+//            if(!armThreadDown.isAlive()){
+//                this.armPidDown = new PID(this.mechRotation, 10, 1.0 / 3000, 1.0 / 10000, 0, this.opMode, this.telemetry, false);
+//                this.armPidDown.stop = false;
+//                this.armThreadDown = new Thread(armPidDown);
+//            }
+
+            if(this.mechExt.getCurrentPosition() < 6000){
+//                if(!armThreadDown.isAlive()){
+//                    armThreadDown.start();
+//                }
+                if(this.mechRotation.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
+                    this.mechRotation.setTargetPosition(-300);
+                    this.mechRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    this.mechRotation.setPower(0.5);
+                }
+
+
+            }
+
+
+
+            if(this.mechRotation.getCurrentPosition() > -350){
+                this.mechRotation.setPower(0);
+                this.mechRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            }
+
+            if(Math.abs(this.mechRotation.getCurrentPosition()) < 50 && Math.abs(this.mechExt.getCurrentPosition() - 4000) < 100){
                 return false;
             }
-
             return true;
         }
 

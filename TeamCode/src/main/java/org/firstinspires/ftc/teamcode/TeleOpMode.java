@@ -308,7 +308,9 @@ public class TeleOpMode extends LinearOpMode {
                 //nothing to do here
             }
             else if(!armGoingUp){
-                armGoingUp = true;
+                    armGoingDown = false;
+                    armGoingUp = true;
+
             }
 
             if(!armDown){
@@ -317,7 +319,8 @@ public class TeleOpMode extends LinearOpMode {
             else if(inputWaitingTimeDown.seconds() < 0.5){
                 //nothing to do here
             }
-            else{
+            else if(!armGoingDown){
+                armGoingUp = false;
                 armGoingDown = true;
             }
 
@@ -330,8 +333,17 @@ public class TeleOpMode extends LinearOpMode {
             else if(armGoingDown){
                 inputWaitingTimeDown.reset();
                 armGoingDown = robot.rotatingDown();
+                telemetry.addLine("gets in function");
             }
             else{
+
+                if(robot.extThreadIn != null ) {
+                    robot.extPidIn.stop = true;
+                }
+                if(robot.extThreadOut != null) {
+                    robot.extPidOut.stop = true;
+                }
+
                 if(robot.mechExt.getMode() != DcMotor.RunMode.RUN_USING_ENCODER){
                     robot.mechExt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 }
@@ -344,11 +356,24 @@ public class TeleOpMode extends LinearOpMode {
                 }
                 else if(gamepad2.right_trigger > 0){
                     mechExtSpeed = -gamepad2.right_trigger;
+                    if(robot.mechExt.getCurrentPosition() < 5){
+                        mechExtSpeed = 0;
+                    }
                 }
 
+                telemetry.addLine("gets in manual");
                 robot.mechExt.setPower(mechExtSpeed);
             }
 
+
+            
+          telemetry.addData("rot position", robot.mechRotation.getCurrentPosition());
+           telemetry.addData("rot Power", robot.mechRotation.getPower());
+//           telemetry.addData("going up", armGoingUp);
+//            telemetry.addData("ext Power", robot.mechExt.getPower());
+//           telemetry.addData("ext Pos", robot.mechExt.getCurrentPosition());
+////            telemetry.addData("distance sensor", robot.rightDistanceSensor.getDistance(DistanceUnit.CM));
+         telemetry.update();
 
 
         }

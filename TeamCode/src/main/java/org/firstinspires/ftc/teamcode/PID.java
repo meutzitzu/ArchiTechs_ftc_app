@@ -61,7 +61,7 @@ public class PID implements Runnable {
             currentError = desiredPosition - endActuator.getCurrentPosition();
 
             proportionalTerm = proportionalConstant * currentError;
-            derivativeTerm = derivativeConstant * ((currentError - previousError) * cycleTime.seconds());
+            derivativeTerm = derivativeConstant * ((currentError - previousError) / cycleTime.seconds());
             integralTerm = integralConstant * integralSum;
 
 
