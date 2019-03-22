@@ -79,6 +79,7 @@ public class Robot {
      */
 
 
+
     public void init(HardwareMap hashMap, boolean teleOp, Telemetry tele, LinearOpMode mode) throws InterruptedException {
 
 
@@ -784,6 +785,76 @@ public class Robot {
                 return false;
             }
 
+        }
+
+        PID armPidUp = null;
+        PID extPidOut = null;
+        PID extPidIn = null;
+
+        Thread armThread = null;
+        Thread extThreadOut = null;
+        Thread extThreadIn = null;
+
+        public boolean rotatingUp(){
+
+
+            extPidOut = new PID(this.mechExt, 1400, 1.0 / 2800, 0, 0, this.opMode, this.telemetry, true);
+
+            if(armThread == null){
+                armPidUp = new PID(this.mechRotation, -1400, 1.0 / 700, 0, 0 ,this.opMode, this.telemetry, true);
+                armPidUp.stop = false;
+                armThread = new Thread(armPidUp);
+                armThread.start();
+            }
+
+            if(extThreadIn == null){
+                extPidIn = new PID (this.mechExt, 0, 0, 0, 0 , this.opMode, this.telemetry, true);
+                extPidIn.stop = false;
+                extThreadIn.
+            }
+
+            extThreadOut = new Thread(extPidOut);
+            extThreadIn = new Thread(extPidIn);
+
+            if(!armThread.isAlive() && Math.abs(this.mechRotation.getCurrentPosition() + 1400) > 50){
+                armPidUp = new PID(this.mechRotation, -1400, 1.0 / 1200, 0, 0 ,this.opMode, this.telemetry, true);
+                armPidUp.stop = false;
+                armThread = new Thread(armPidUp);
+                armThread.start();
+            }
+            else if(Math.abs(this.mechRotation.getCurrentPosition() + 1400) <= 50){
+                armPidUp.stop = true;
+
+            }
+
+            if(this.mechRotation.getCurrentPosition() < -100){
+                if(!extThreadIn.isAlive()){
+                    extPidIn.stop = false;
+                    extThreadIn.start();
+                }
+            }
+
+
+            if(Math.abs(this.mechRotation.getCurrentPosition() + 1400) < 50 && Math.abs(this.mechExt.getCurrentPosition()) < 50){
+                return false;
+
+            }
+
+            return true;
+
+        }
+
+        public boolean rotatingDown(){
+
+            if(this.mechRotation.getMode() == DcMotor.RunMode.RUN_TO_POSITION){
+                this.mechRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            }
+
+            if(Math.abs(this.mechRotation.getCurrentPosition()) < 50 && Math.abs(this.mechExt.getCurrentPosition() - 500) < 50){
+                return false;
+            }
+
+            return true;
         }
 
 }

@@ -45,15 +45,14 @@ public class TeleOpMode extends LinearOpMode {
     boolean liftOverwitting = false;
     int testAngle = 45;
 
-    PID armPid = null;
-    PID extPid = null;
-    Thread armThread = new Thread();
-    Thread extThread = new Thread();
+    boolean armUp = false;
+    boolean armGoingUp = false;
+    boolean armDown = false;
+    boolean armGoingDown = false;
 
     ElapsedTime grabberTimer = new ElapsedTime();
-
-
-    boolean armUp = false;
+    ElapsedTime inputWaitingTimeUp = new ElapsedTime();
+    ElapsedTime inputWaitingTimeDown = new ElapsedTime();
 
     int newMaxRotation = -420;
 
@@ -305,77 +304,58 @@ public class TeleOpMode extends LinearOpMode {
 
 
             if(gamepad2.dpad_up){
-                if(!armThread.isAlive()){
-                    armPid = new PID(robot.mechRotation, -1650, 1.0 / 1500, 0, 1.0 / 15000 ,robot.opMode, telemetry, false);
-                    armThread = new Thread(armPid);
-                    armThread.start();
-                }
-
-                if(robot.mechExt.getCurrentPosition() > -400 || true){
-                    if(!extThread.isAlive()){
-                        extPid = new PID(robot.mechExt, 1400, 1.0 / 2800, 0, 0, robot.opMode, telemetry, true);
-                        extThread = new Thread(extPid);
-                        extThread.start();
-
-                        grabberTimer.reset();
-                    }
-
-                    if(grabberTimer.seconds() < 1){
-                        robot.mechGrab.setPower(-robot.GRABBING_SPEED);
-                    }
-
-                }
-//                else{
-//                    if(extThread.isAlive()){
-//                        extThread.interrupt();
-//                    }
-//
-//
-//
-//                }
+                armUp = true;
+                armDown = false;
+            }
+            else if(gamepad2.dpad_down){
+                armUp = false;
+                armDown = true;
             }
             else{
-                if(extPid != null) {
-                    extPid.stop = true;
-                }
-                if(armPid != null) {
-                    armPid.stop = true;
-                }
+                armUp = false;
+                armDown = false;
             }
 
-            if(gamepad2.dpad_down){
-                robot.mechExt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                robot.mechExt.setPower(0.5);
+            if(!armUp){
+                inputWaitingTimeUp.reset();
+            }
+            else if(inputWaitingTimeUp.seconds() < 0.5){
+                //nothing to do here
+            }
+            else if(!armGoingUp){
+                armGoingUp = true;
+            }
+
+            if(!armDown){
+                inputWaitingTimeDown.reset();
+            }
+            else if(inputWaitingTimeDown.seconds() < 0.5){
+                //nothing to do here
             }
             else{
-                robot.mechExt.setPower(0);
-            }
-            if(gamepad1.dpad_left){
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        robot.mechLiftLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        robot.mechLiftRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        robot.mechLiftLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                        robot.mechLiftRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                        while(robot.mechLiftLeft.getCurrentPosition() > robot.MIN_LIFT_POSITION &&
-                                robot.mechLiftRight.getCurrentPosition() > robot.MIN_LIFT_POSITION && !isStopRequested()){
-                            robot.liftMovement(-robot.LIFT_SPEED, false);
-                        }
-                        robot.liftMovement(0, false);
-                    }
-                }).start();
+                armGoingDown = true;
             }
 
+
+
+            if(armGoingUp){
+                inputWaitingTimeUp.reset();
+                armGoingUp = robot.rotatingUp();
+            }
+            else if(armGoingDown){
+                inputWaitingTimeDown.reset();
+                armGoingDown = robot.rotatingDown();
+            }
 
 
             
-            telemetry.addData("rot position", robot.mechRotation.getCurrentPosition());
-            telemetry.addData("rot Power", robot.mechRotation.getPower());
-            telemetry.addData("ext Power", robot.mechExt.getPower());
-            telemetry.addData("ext Pos", robot.mechExt.getCurrentPosition());
-            telemetry.addData("distance sensor", robot.leftDistanceSensor.getDistance(DistanceUnit.CM));
-            telemetry.update();
+//           telemetry.addData("rot position", robot.mechRotation.getCurrentPosition());
+//           telemetry.addData("rot Power", robot.mechRotation.getPower());
+//           telemetry.addData("going up", armGoingUp);
+////            telemetry.addData("ext Power", robot.mechExt.getPower());
+////            telemetry.addData("ext Pos", robot.mechExt.getCurrentPosition());
+////            telemetry.addData("distance sensor", robot.rightDistanceSensor.getDistance(DistanceUnit.CM));
+//          telemetry.update();
 
         }
 
