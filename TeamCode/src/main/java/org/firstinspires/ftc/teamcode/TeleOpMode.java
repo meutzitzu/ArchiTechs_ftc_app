@@ -337,6 +337,19 @@ public class TeleOpMode extends LinearOpMode {
             }
             else{
 
+                if(gamepad2.right_stick_y != 0){
+                    if(robot.mechRotation.getMode() != DcMotor.RunMode.RUN_USING_ENCODER) {
+                        robot.mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                        robot.mechRotation.setPower(0);
+                    }
+                    robot.mechRotation.setPower(gamepad2.right_stick_y*.2);
+                }
+                if(gamepad2.right_bumper){
+                    robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    robot.mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    robot.mechRotation.setPower(0);
+                }
+
                 if(robot.extThreadIn != null ) {
                     robot.extPidIn.stop = true;
                 }
@@ -364,22 +377,12 @@ public class TeleOpMode extends LinearOpMode {
                 telemetry.addLine("gets in manual");
                 robot.mechExt.setPower(mechExtSpeed);
             }
-            if(gamepad2.right_stick_y != 0){
-                if(robot.mechRotation.getMode() != DcMotor.RunMode.RUN_USING_ENCODER) {
-                    robot.mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    robot.mechRotation.setPower(0);
-                }
-                robot.mechRotation.setPower(gamepad2.right_stick_y);
-            }
-            if(gamepad2.right_bumper){
-                robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                robot.mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                robot.mechRotation.setPower(0);
-            }
+
 
             
           telemetry.addData("rot position", robot.mechRotation.getCurrentPosition());
            telemetry.addData("rot Power", robot.mechRotation.getPower());
+           telemetry.addLine("power from right stick: " + gamepad2.right_stick_y * 100);
 //           telemetry.addData("going up", armGoingUp);
 //            telemetry.addData("ext Power", robot.mechExt.getPower());
 //           telemetry.addData("ext Pos", robot.mechExt.getCurrentPosition());
