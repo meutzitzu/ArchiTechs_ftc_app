@@ -810,7 +810,6 @@ public class Robot {
             if(extThreadIn == null){
                 extPidIn = new PID (this.mechExt, 0, 0, 0, 0 , this.opMode, this.telemetry, true);
                 extPidIn.stop = false;
-                extThreadIn.
             }
 
             extThreadOut = new Thread(extPidOut);
@@ -846,9 +845,31 @@ public class Robot {
 
         public boolean rotatingDown(){
 
-            if(this.mechRotation.getMode() == DcMotor.RunMode.RUN_TO_POSITION){
-                this.mechRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            }
+            final Robot robot = this;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    robot.mechExt.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    robot.mechRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    boolean startedExtension = false;
+                    while(robot.mechExt.getCurrentPosition() > 600){
+                        robot.mechExt.setPower(-.6);
+                        if(!startedExtension && robot.mechExt.getCurrentPosition() < 4000){
+                            startedExtension = true;
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    while(robot.mechRotation.getCurrentPosition() > 100){
+                                        robot.mechRotation.setPower(-.7);
+                                    }
+                                    robot.mechRotation.setPower(0);
+                                }
+                            }).start();
+                        }
+                    }
+                    robot.mechExt.setPower(0);
+                }
+            }).start();
 
             if(Math.abs(this.mechRotation.getCurrentPosition()) < 50 && Math.abs(this.mechExt.getCurrentPosition() - 500) < 50){
                 return false;

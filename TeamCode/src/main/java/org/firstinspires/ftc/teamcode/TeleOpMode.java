@@ -216,10 +216,6 @@ public class TeleOpMode extends LinearOpMode {
                 robot.mechGrab.setPower(-robot.GRABBING_SPEED);
             }
 
-
-
-
-
             if(gamepad2.dpad_up){
 //                robot.setDriveTrainPostionDIY(1000, "translation", 1);
                 testAngle = 0;
