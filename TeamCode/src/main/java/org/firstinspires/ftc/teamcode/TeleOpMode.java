@@ -204,6 +204,30 @@ public class TeleOpMode extends LinearOpMode {
                 robot.mechGrab.setPower(-robot.GRABBING_SPEED);
             }
 
+            if(gamepad2.dpad_up){
+//                robot.setDriveTrainPostionDIY(1000, "translation", 1);
+                testAngle = 0;
+                robot.mechGrab.setPower(-1);
+            }
+            if(gamepad2.dpad_down){
+//                robot.setDriveTrainPostionDIY(1000, "rotation", 1);
+                testAngle = 180;
+                robot.mechGrab.setPower(1);
+            }
+            if(gamepad2.dpad_right){
+//                robot.setDriveTrainPostionDIY(1000, "strafing", 1);
+                testAngle = 210;
+                robot.mechGrab.setPower(0);
+            }
+
+            if(gamepad1.right_bumper){
+                robot.mechExt.setPower(0.5);
+            }
+            else if(gamepad1.left_bumper){
+                robot.mechExt.setPower(-0.5);
+            }
+            else
+                robot.mechExt.setPower(0);
 
 
 
@@ -313,6 +337,19 @@ public class TeleOpMode extends LinearOpMode {
             }
             else{
 
+                if(gamepad2.right_stick_y != 0){
+                    if(robot.mechRotation.getMode() != DcMotor.RunMode.RUN_USING_ENCODER) {
+                        robot.mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                        robot.mechRotation.setPower(0);
+                    }
+                    robot.mechRotation.setPower(gamepad2.right_stick_y*.2);
+                }
+                if(gamepad2.right_bumper){
+                    robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    robot.mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    robot.mechRotation.setPower(0);
+                }
+
                 if(robot.extThreadIn != null ) {
                     robot.extPidIn.stop = true;
                 }
@@ -341,11 +378,13 @@ public class TeleOpMode extends LinearOpMode {
                 robot.mechExt.setPower(mechExtSpeed);
             }
 
+
             
           telemetry.addData("rot position", robot.mechRotation.getCurrentPosition());
            telemetry.addData("ext Pos", robot.mechExt.getCurrentPosition());
 ////            telemetry.addData("distance sensor", robot.rightDistanceSensor.getDistance(DistanceUnit.CM));
          telemetry.update();
+
 
         }
 
