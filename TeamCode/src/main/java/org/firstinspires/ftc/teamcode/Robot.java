@@ -894,22 +894,25 @@ public class Robot {
 //                this.armThreadDown = new Thread(armPidDown);
 //            }
 
-            if(this.mechExt.getCurrentPosition() < 6000){
-//                if(!armThreadDown.isAlive()){
-//                    armThreadDown.start();
-//                }
+            if(this.mechExt.getCurrentPosition() < 6000 && this.mechRotation.getCurrentPosition() <= -300){
+                if(armThread.isAlive()){
+                    armPidUp.stop = true;
+                }
                 if(this.mechRotation.getMode() != DcMotor.RunMode.RUN_TO_POSITION){
-                    this.mechRotation.setTargetPosition(-300);
                     this.mechRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    this.mechRotation.setTargetPosition(-300);
                     this.mechRotation.setPower(0.5);
                 }
 
+
+                telemetry.addData("motor mode", mechRotation.getMode());
+                telemetry.update();
 
             }
 
 
 
-            if(this.mechRotation.getCurrentPosition() > -350){
+            if(this.mechRotation.getCurrentPosition() > -300){
                 this.mechRotation.setPower(0);
                 this.mechRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             }
