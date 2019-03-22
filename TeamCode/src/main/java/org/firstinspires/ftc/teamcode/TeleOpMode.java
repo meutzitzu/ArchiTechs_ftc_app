@@ -200,7 +200,7 @@ public class TeleOpMode extends LinearOpMode {
             }
 
 
-            if(gamepad2.dpad_down){
+            if(gamepad2.left_bumper){
                 robot.mechGrab.setPower(-robot.GRABBING_SPEED);
             }
 
