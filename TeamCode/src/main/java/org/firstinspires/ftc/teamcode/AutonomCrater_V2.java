@@ -563,7 +563,7 @@ public class AutonomCrater_V2 extends LinearOpMode {
 
         while (currentError > minDistanceToWall && !robot.opMode.isStopRequested()) {
 
-            if (Math.abs(robot.leftDistanceSensor.getDistance(DistanceUnit.CM) - currentError) < 10) {
+            if (Math.abs(robot.leftDistanceSensor.getDistance(DistanceUnit.CM) - currentError) < 20 && robot.leftDistanceSensor.getDistance(DistanceUnit.CM) > 2) {
                 currentError = robot.leftDistanceSensor.getDistance(DistanceUnit.CM);
             }
 
@@ -579,7 +579,11 @@ public class AutonomCrater_V2 extends LinearOpMode {
 //                 if(currentDriveTrainPosition - initialDriveTrainPosition > 2700){
 //                     break;
 //                 }
+            currentDriveTrainPosition = robot.driveFrontLeft.getCurrentPosition();
 
+            if(Math.abs(initialDriveTrainPosition - currentDriveTrainPosition) >3500){
+                break;
+            }
             robot.mecanumMovement(outSpeed, 0, 0);
 
             robot.telemetry.addData("distance", currentError);
@@ -646,11 +650,11 @@ public class AutonomCrater_V2 extends LinearOpMode {
         robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.mechRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        robot.mechRotation.setTargetPosition(2000);
+        robot.mechRotation.setTargetPosition((int)(0.6 * (-2600)));
         robot.mechRotation.setPower(1);
         robot.mecanumMovement(0, 0, 0);
 
-        while (robot.mechRotation.getCurrentPosition() < 2000 && !robot.opMode.isStopRequested()) {
+        while (robot.mechRotation.getCurrentPosition() > 0.6 * -2200 && !robot.opMode.isStopRequested()) {
 
         }
         robot.mechRotation.setPower(0);
@@ -756,9 +760,6 @@ public class AutonomCrater_V2 extends LinearOpMode {
         robot.telemetry.addData("order", mineralSequence[1] + " " + mineralSequence[2] + " " + mineralSequence[3]);
         robot.telemetry.update();
 
-        while (robot.opMode.opModeIsActive()) {
-
-        }
 
         for (int i = 1; i <= 3; i++) {
             if (mineralSequence[i] == 0 && goldMineral) {

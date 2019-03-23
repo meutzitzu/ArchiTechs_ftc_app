@@ -133,7 +133,7 @@ public class Autonom2 extends LinearOpMode {
                 ElapsedTime time = new ElapsedTime();
                 if (tfod != null)
                     tfod.activate();
-                while (time.seconds() < 8 && !foundMineral && tfod != null && !isStopRequested()) {
+                while (time.seconds() < 10 && !foundMineral && tfod != null && !isStopRequested()) {
 
                     List<Recognition> updatedRecognitionsUnfiltered = tfod.getUpdatedRecognitions();
                     List<Recognition> updatedRecognitions = new ArrayList<>();
@@ -235,7 +235,11 @@ public class Autonom2 extends LinearOpMode {
         robot.setDrivetrainPosition(500, "translation", .6);
 
         try {
-            sampleMineral(mineralPosition.get());
+
+            if(!mineralPosition.isDone())
+                sampleMineral(new int[]{ 0, 0, 0});
+            else
+                sampleMineral(mineralPosition.get());
             executorService.shutdown();
         } catch (ExecutionException e) {
             telemetry.addLine("Something went wrong: " + e.toString());
@@ -314,12 +318,24 @@ public class Autonom2 extends LinearOpMode {
 
     private void moveToCrater(int ticks) {
         robot.setDrivetrainPosition(ticks, "translation", 1);
+
+        robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.mechRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        robot.mechRotation.setTargetPosition((int) (0.6 *-2600));
+        robot.mechRotation.setPower(1);
+        robot.mecanumMovement(0, 0, 0);
+
+        while (robot.mechRotation.getCurrentPosition() > 0.6 * -2200 && !robot.opMode.isStopRequested()) {
+
+        }
+        robot.mechRotation.setPower(0);
     }
 
 
     private void attemptSampleFromGround(int[] mineralPosition) {
 
-        new AutonomCrater_V2(robot, tfod, "Deploy").samplingStuff(mineralPosition);
+        new AutonomCrater_V2(robot, tfod, "Deploy").tensorDetectionSimple(mineralPosition);
 
     }
 

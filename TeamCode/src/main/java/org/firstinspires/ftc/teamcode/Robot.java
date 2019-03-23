@@ -184,7 +184,7 @@ public class Robot {
         mechRotation.setDirection(DcMotor.Direction.REVERSE);
         mechLiftLeft.setDirection(DcMotor.Direction.FORWARD);
         mechLiftRight.setDirection(DcMotor.Direction.FORWARD);
-        mechExt.setDirection(DcMotor.Direction.FORWARD);
+        mechExt.setDirection(DcMotor.Direction.REVERSE);
 
         mechStopper.setDirection(Servo.Direction.FORWARD);
         mechGrab.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -806,7 +806,7 @@ public class Robot {
 
 
             if(this.armThread == null){
-                this.armPidUp = new PID(this.mechRotation, -1570, 1.0 / 1800, 0, 0 ,this.opMode, this.telemetry, true);
+                this.armPidUp = new PID(this.mechRotation, 0.6 * 2000, 1.0 / 1800, 0, 0 ,this.opMode, this.telemetry, true);
                 this.armPidUp.stop = false;
                 this.armThread = new Thread(armPidUp);
                 this.armThread.start();
@@ -814,26 +814,22 @@ public class Robot {
 
 
             if(this.extThreadOut == null){
-                this.extPidOut = new PID(this.mechExt, 10000, 0.8 / 3000, 0, 0, this.opMode, this.telemetry, true);
+                this.extPidOut = new PID(this.mechExt, 9000, 0.8 / 1000, 0, 0, this.opMode, this.telemetry, true);
                 this.extPidOut.stop = false;
                 this.extThreadOut = new Thread(extPidOut);
             }
 
 
-            if(!this.armThread.isAlive() && Math.abs(this.mechRotation.getCurrentPosition() + 1400) > 50){
-                this.armPidUp = new PID(this.mechRotation, -1570, 1.0 / 1800, 0, 0 ,this.opMode, this.telemetry, true);
+            if(!this.armThread.isAlive() && Math.abs(this.mechRotation.getCurrentPosition() - 2000) > 50){
+                this.armPidUp = new PID(this.mechRotation, 0.6 * 2000, 1.0 / 1800, 0, 0 ,this.opMode, this.telemetry, true);
                 this.armPidUp.stop = false;
                 this.armThread = new Thread(armPidUp);
                 this.armThread.start();
             }
 
-            if(this.mechRotation.getCurrentPosition() > -300){
-                this.mechGrab.setPower(this.GRABBING_SPEED);
-            }
-
-            if(this.mechRotation.getCurrentPosition() < -300){
+            if(this.mechRotation.getCurrentPosition() > 1500){
                 if(!this.extThreadOut.isAlive()){
-                    this.extPidOut = new PID(this.mechExt, 10000, 0.8 / 1000, 0, 0, this.opMode, this.telemetry, true);
+                    this.extPidOut = new PID(this.mechExt, 9000, 0.8 / 1000, 0, 0, this.opMode, this.telemetry, true);
                     this.extPidOut.stop = false;
                     this.extThreadOut = new Thread(extPidOut);
                     this.extThreadOut.start();
@@ -841,7 +837,7 @@ public class Robot {
             }
 
 
-            if(Math.abs(this.mechRotation.getCurrentPosition() + 1570) < 50 && Math.abs(this.mechExt.getCurrentPosition() - 10000) < 100){
+            if(Math.abs(this.mechRotation.getCurrentPosition() - 0.6 * 2000) < 50 && Math.abs(this.mechExt.getCurrentPosition() - 9000) < 100){
                 return false;
             }
 
@@ -854,13 +850,6 @@ public class Robot {
         Thread armThreadDown = null;
 
         public boolean rotatingDown(){
-            final Robot robot = this;
-            while(robot.mechExt.getCurrentPosition() > 600){
-                robot.mechExt.setPower(-.7);
-                robot.telemetry.addData("mechExt pos:", robot.mechExt.getCurrentPosition());
-            }
-            robot.telemetry.addLine("Extension done!");
-            robot.mechExt.setPower(0);
 
 
 //            if(this.armPidUp != null){
@@ -871,13 +860,13 @@ public class Robot {
             }
 
             if(this.extThreadIn == null){
-                this.extPidIn = new PID(this.mechExt, 4000, 1.0 / 3000, 0, 0, this.opMode, this.telemetry, true);
+                this.extPidIn = new PID(this.mechExt, 200, 10, 0, 0, this.opMode, this.telemetry, true);
                 this.extPidIn.stop = false;
                 this.extThreadIn = new Thread(extPidIn);
                 this.extThreadIn.start();
             }
             if(!this.extThreadIn.isAlive()){
-                this.extPidIn = new PID(this.mechExt, 4000, 1.0 / 3000, 0, 0, this.opMode, this.telemetry, true);
+                this.extPidIn = new PID(this.mechExt, 200, 10, 0, 0, this.opMode, this.telemetry, true);
                 this.extPidIn.stop = false;
                 this.extThreadIn = new Thread(extPidIn);
                 this.extThreadIn.start();
@@ -894,7 +883,7 @@ public class Robot {
 //                this.armThreadDown = new Thread(armPidDown);
 //            }
 
-            if(this.mechExt.getCurrentPosition() < 6000 && this.mechRotation.getCurrentPosition() <= -300){
+            if(this.mechExt.getCurrentPosition() < 300 && this.mechRotation.getCurrentPosition() <= -300){
                 if(armThread.isAlive()){
                     armPidUp.stop = true;
                 }
@@ -917,7 +906,7 @@ public class Robot {
                 this.mechRotation.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             }
 
-            if(Math.abs(this.mechRotation.getCurrentPosition()) < 200 && Math.abs(this.mechExt.getCurrentPosition() - 4000) < 100){
+            if(Math.abs(this.mechRotation.getCurrentPosition()) < 200 && Math.abs(this.mechExt.getCurrentPosition()) < 250){
                 return false;
             }
             return true;
