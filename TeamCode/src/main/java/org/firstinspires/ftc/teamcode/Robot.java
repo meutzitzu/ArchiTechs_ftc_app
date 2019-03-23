@@ -854,14 +854,6 @@ public class Robot {
         Thread armThreadDown = null;
 
         public boolean rotatingDown(){
-            final Robot robot = this;
-            while(robot.mechExt.getCurrentPosition() > 600){
-                robot.mechExt.setPower(-.7);
-                robot.telemetry.addData("mechExt pos:", robot.mechExt.getCurrentPosition());
-            }
-            robot.telemetry.addLine("Extension done!");
-            robot.mechExt.setPower(0);
-
 
 //            if(this.armPidUp != null){
 //                armPidUp.stop = true;
