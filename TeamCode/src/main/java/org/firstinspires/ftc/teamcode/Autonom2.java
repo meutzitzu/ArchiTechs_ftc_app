@@ -239,7 +239,8 @@ public class Autonom2 extends LinearOpMode {
             executorService.shutdown();
         } catch (ExecutionException e) {
             telemetry.addLine("Something went wrong: " + e.toString());
-        } finally {
+        } catch(NullPointerException e){}
+        finally {
             telemetry.update();
         }
 
@@ -314,6 +315,18 @@ public class Autonom2 extends LinearOpMode {
 
     private void moveToCrater(int ticks) {
         robot.setDrivetrainPosition(ticks, "translation", 1);
+
+        robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.mechRotation.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        robot.mechRotation.setTargetPosition((int) (0.6 *-2600));
+        robot.mechRotation.setPower(1);
+        robot.mecanumMovement(0, 0, 0);
+
+        while (robot.mechRotation.getCurrentPosition() > 0.6 * -2200 && !robot.opMode.isStopRequested()) {
+
+        }
+        robot.mechRotation.setPower(0);
     }
 
 

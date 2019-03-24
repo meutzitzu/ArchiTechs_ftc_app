@@ -53,6 +53,7 @@ public class TeleOpMode extends LinearOpMode {
     ElapsedTime grabberTimer = new ElapsedTime();
     ElapsedTime inputWaitingTimeUp = new ElapsedTime();
     ElapsedTime inputWaitingTimeDown = new ElapsedTime();
+    ElapsedTime grabberAdjustment = new ElapsedTime();
 
     int newMaxRotation = -420;
 
@@ -153,19 +154,13 @@ public class TeleOpMode extends LinearOpMode {
 
                 //adjusting lift motors if needed -> 2nd controller
 
-            else if(gamepad2.b){
+           else if(gamepad2.b){
                 robot.mechLiftRight.setPower(1);
             }
             else if(gamepad2.a){
                 robot.mechLiftRight.setPower(-1);
             }
 
-            else if(gamepad2.y){
-                robot.mechLiftLeft.setPower(1);
-            }
-            else if(gamepad2.x){
-                robot.mechLiftLeft.setPower(-1);
-            }
             else if(!gamepad1.a && !gamepad1.b){
                 robot.liftMovement(0, false);
             }
@@ -204,30 +199,7 @@ public class TeleOpMode extends LinearOpMode {
                 robot.mechGrab.setPower(-robot.GRABBING_SPEED);
             }
 
-            if(gamepad2.dpad_up){
-//                robot.setDriveTrainPostionDIY(1000, "translation", 1);
-                testAngle = 0;
-                robot.mechGrab.setPower(-1);
-            }
-            if(gamepad2.dpad_down){
-//                robot.setDriveTrainPostionDIY(1000, "rotation", 1);
-                testAngle = 180;
-                robot.mechGrab.setPower(1);
-            }
-            if(gamepad2.dpad_right){
-//                robot.setDriveTrainPostionDIY(1000, "strafing", 1);
-                testAngle = 210;
-                robot.mechGrab.setPower(0);
-            }
 
-            if(gamepad1.right_bumper){
-                robot.mechExt.setPower(0.5);
-            }
-            else if(gamepad1.left_bumper){
-                robot.mechExt.setPower(-0.5);
-            }
-            else
-                robot.mechExt.setPower(0);
 
 
 
@@ -304,24 +276,52 @@ public class TeleOpMode extends LinearOpMode {
             if(!armUp){
                 inputWaitingTimeUp.reset();
             }
-            else if(inputWaitingTimeUp.seconds() < 0.5){
+            else if(inputWaitingTimeUp.seconds() < 0.2){
                 //nothing to do here
             }
             else if(!armGoingUp){
                     armGoingDown = false;
                     armGoingUp = true;
-
+                grabberAdjustment.reset();
             }
 
             if(!armDown){
                 inputWaitingTimeDown.reset();
             }
-            else if(inputWaitingTimeDown.seconds() < 0.5){
+            else if(inputWaitingTimeDown.seconds() < 0.2){
                 //nothing to do here
             }
-            else if(!armGoingDown){
+//            else if(!armGoingDown){
+//                armGoingUp = false;
+//                armGoingDown = true;
+//            }
+            else{
                 armGoingUp = false;
-                armGoingDown = true;
+                if(robot.extThreadIn != null){
+                    if(!robot.extThreadIn.isAlive()) {
+                        robot.extPidIn.stop = true;
+                    }
+                }
+                if(robot.extThreadOut != null){
+                    if(!robot.extThreadOut.isAlive()) {
+                        robot.extPidOut.stop = true;
+                    }
+                }
+                if(robot.mechExt.getCurrentPosition() > 200){
+                    if(robot.mechRotation.getMode() != DcMotor.RunMode.RUN_USING_ENCODER){
+                        robot.mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    }
+                    robot.mechExt.setPower(-0.9);
+                }
+                if(robot.mechExt.getCurrentPosition() < 300){
+                    if(robot.armThread != null){
+                        robot.armPidUp.stop = true;
+                    }
+                    if(robot.mechRotation.getMode() != DcMotor.RunMode.RUN_USING_ENCODER){
+                        robot.mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    }
+                    robot.mechRotation.setPower(-0.4);
+                }
             }
 
 
@@ -329,33 +329,42 @@ public class TeleOpMode extends LinearOpMode {
             if(armGoingUp){
                 inputWaitingTimeUp.reset();
                 armGoingUp = robot.rotatingUp();
+                if(grabberAdjustment.seconds() < 0.5){
+                    robot.mechGrab.setPower(robot.GRABBING_SPEED);
+                }
+                else{
+                    robot.mechGrab.setPower(0);
+                }
             }
             else if(armGoingDown){
                 inputWaitingTimeDown.reset();
-                armGoingDown = robot.rotatingDown();
+//                armGoingDown = robot.rotatingDown();
                 telemetry.addLine("gets in function");
             }
-            else{
+            else if(!gamepad2.dpad_down){
 
-                if(gamepad2.right_stick_y != 0){
-                    if(robot.mechRotation.getMode() != DcMotor.RunMode.RUN_USING_ENCODER) {
+                if(gamepad2.dpad_left){
+                    if(robot.armPidUp != null) {
+                        robot.armPidUp.stop = true;
+                    }
+                }
+
+                if (gamepad2.right_stick_y != 0 || true) {
+
+                    if(robot.armPidDown != null) {
+                        robot.armPidDown.stop = true;
+                    }
+
+
+                    if (robot.mechRotation.getMode() != DcMotor.RunMode.RUN_USING_ENCODER) {
                         robot.mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                         robot.mechRotation.setPower(0);
                     }
-                    robot.mechRotation.setPower(gamepad2.right_stick_y*.2);
-                }
-                if(gamepad2.right_bumper){
-                    robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    robot.mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    robot.mechRotation.setPower(0);
+                    robot.mechRotation.setPower(gamepad2.right_stick_y * .2);
                 }
 
-                if(robot.extThreadIn != null ) {
-                    robot.extPidIn.stop = true;
-                }
-                if(robot.extThreadOut != null) {
-                    robot.extPidOut.stop = true;
-                }
+
+
 
                 if(robot.mechExt.getMode() != DcMotor.RunMode.RUN_USING_ENCODER){
                     robot.mechExt.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -365,9 +374,22 @@ public class TeleOpMode extends LinearOpMode {
                     mechExtSpeed = 0;
                 }
                 else if(gamepad2.left_trigger > 0){
+                    if(robot.extThreadIn != null ) {
+                        robot.extPidIn.stop = true;
+                    }
+                    if(robot.extThreadOut != null) {
+                        robot.extPidOut.stop = true;
+                    }
                     mechExtSpeed = gamepad2.left_trigger;
+
                 }
                 else if(gamepad2.right_trigger > 0){
+                    if(robot.extThreadIn != null ) {
+                        robot.extPidIn.stop = true;
+                    }
+                    if(robot.extThreadOut != null) {
+                        robot.extPidOut.stop = true;
+                    }
                     mechExtSpeed = -gamepad2.right_trigger;
                     if(robot.mechExt.getCurrentPosition() < 5){
                         mechExtSpeed = 0;
@@ -378,10 +400,24 @@ public class TeleOpMode extends LinearOpMode {
                 robot.mechExt.setPower(mechExtSpeed);
             }
 
+            if(robot.armThread != null) {
+                if (gamepad2.x && !robot.armThread.isAlive()) {
+                    robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    robot.mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    robot.mechRotation.setPower(0);
+                }
+            }
+            else{
+                if(gamepad2.x){
+                    robot.mechRotation.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    robot.mechRotation.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    robot.mechRotation.setPower(0);
+                }
+            }
 
-            
           telemetry.addData("rot position", robot.mechRotation.getCurrentPosition());
            telemetry.addData("ext Pos", robot.mechExt.getCurrentPosition());
+           telemetry.addData("Left Lift", robot.mechLiftLeft.getCurrentPosition());
 ////            telemetry.addData("distance sensor", robot.rightDistanceSensor.getDistance(DistanceUnit.CM));
          telemetry.update();
 
