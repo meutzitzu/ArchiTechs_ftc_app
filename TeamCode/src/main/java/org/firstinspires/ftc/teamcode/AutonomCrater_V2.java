@@ -203,9 +203,10 @@ public class AutonomCrater_V2 extends LinearOpMode {
         boolean goldMineral = false;
         boolean newSphere;
         int sphereTruePosition, robotSphereAngle, sphereVuAngle;
-        int firstRecognitionRaw = 335, secondRecognitionRaw = 310;
+        int firstRecognitionRaw = 320, secondRecognitionRaw = 290;
         int firstRecognition, secondRecognition;
         int supportAngle = 20;
+        int counter = 0;
 
         ElapsedTime mineralRetrievalTimer = new ElapsedTime();
         boolean firstRecognitionCheck = true;
@@ -249,11 +250,13 @@ public class AutonomCrater_V2 extends LinearOpMode {
                 recognitionPosition = 1;
                 firstRecognitionCheck = false;
                 mineralRetrievalTimer.reset();
+                counter++;
             } else if ((mineralRetrievalTimer.milliseconds() >= 2000 || firstRecognitionCheck) && recognitionPosition == 1) {
                 robot.gyroRotationWIP(secondRecognition, "absolute", side);
                 recognitionPosition = 2;
                 firstRecognitionCheck = false;
                 mineralRetrievalTimer.reset();
+                counter++;
             }
 
 
@@ -770,7 +773,9 @@ public class AutonomCrater_V2 extends LinearOpMode {
         }
 
 
-        mineralDisplacement(mineralSequence, this.side);
+        if(this.side.equals("Crater")) {
+            mineralDisplacement(mineralSequence, this.side);
+        }
 
 
 //            for(int i = 1; i <= 3; i++){

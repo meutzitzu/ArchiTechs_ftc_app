@@ -133,7 +133,7 @@ public class Autonom extends LinearOpMode {
                 ElapsedTime time = new ElapsedTime();
                 if(tfod != null)
                     tfod.activate();
-                while(time.seconds() < 8 && !foundMineral && tfod != null && !isStopRequested()){
+                while(time.seconds() < 10 && !foundMineral && tfod != null && !isStopRequested()){
 
                     List<Recognition> updatedRecognitionsUnfiltered = tfod.getUpdatedRecognitions();
                     List<Recognition> updatedRecognitions = new ArrayList<>();
@@ -235,7 +235,12 @@ public class Autonom extends LinearOpMode {
         robot.setDrivetrainPosition(500, "translation", 1);
 
         try {
-            sampleMineral(mineralPosition.get());
+            if(!mineralPosition.isDone()){
+                mineralPosition.cancel(true);
+                sampleMineral(new int[]{0, 0, 0, 0});
+            } else {
+                sampleMineral(mineralPosition.get());
+            }
             executorService.shutdown();
         } catch (ExecutionException e){
             telemetry.addLine("Something went wrong: " + e.toString());
